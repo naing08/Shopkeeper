@@ -21,7 +21,6 @@ import ActionLockOpen from 'material-ui/svg-icons/action/lock-open';
 import EditCustomerDialog from './EditCustomerDialog';
 import ImagePhotoCamera from 'material-ui/svg-icons/image/photo-camera';
 import FilePickerHidden from '../../common/FilePickerHidden';
-import ReactDOM from 'react-dom';
 import {updateCustomerMutation} from '../../../common/apollo/Customer/index';
 import PhotoManager from '../../../common/PhotoManager';
 class CustomerViewer extends React.Component{
@@ -148,7 +147,7 @@ class CustomerViewer extends React.Component{
     					<Card>
     						<CardHeader title={
                                 <div className="row" style={{alignItems:'center'}}>{FullName} 
-                                    <IconButton tooltip="Change Profile Photo" onClick={()=>{ReactDOM.findDOMNode(this.filePickerHidden).click();}} style={{padding:'0px',height:'24px'}} touch={true}>
+                                    <IconButton tooltip="Change Profile Photo" onClick={()=>{this.filePickerHidden.click();}} style={{padding:'0px',height:'24px'}} touch={true}>
                                         <ImagePhotoCamera  color={muiTheme.palette.primary1Color} />
                                         <FilePickerHidden ref={ el => this.filePickerHidden = el} accept="image/*" multiple={false} onFilesAccepted={this.onFilesAccepted.bind(this)}/>
                                     </IconButton>

@@ -10,7 +10,7 @@ const supportMultiple = (typeof document !== 'undefined' && document && document
     true;
 class FilePickerHidden extends React.Component{
 
-    onClick(){
+    click(){
         this.fileInputEl.click();
     }
 
@@ -71,7 +71,7 @@ class FilePickerHidden extends React.Component{
     render (){
         let {accept,multiple,onFilesAccepted} = this.props;
         return (
-            <input type="file"   style={{display:'none'}} multiple={supportMultiple&&multiple} accept={accept} onChange={this.onChange.bind(this)}/>
+            <input type="file" ref={el=>{this.fileInputEl = el;}}   style={{display:'none'}} multiple={supportMultiple&&multiple} accept={accept} onChange={this.onChange.bind(this)}/>
         );
     }
 }
