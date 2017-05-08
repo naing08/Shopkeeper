@@ -30,7 +30,8 @@ module.exports=(sequelize,DataTypes)=>{
             }
         },
         Price:DataTypes.DECIMAL(10,4),
-        Description:DataTypes.TEXT
+        Description:DataTypes.TEXT,
+        Overview:DataTypes.TEXT
 
     },{
         classMethods:{
@@ -39,7 +40,6 @@ module.exports=(sequelize,DataTypes)=>{
                 models.ProductGroup.hasMany(Product);
                 Product.hasMany(models.ProductPhoto);
                 Product.belongsTo(models.ProductPhoto,{as:"DefaultPhoto",constraints:false});
-                Product.belongsTo(models.ProductPhoto,{as:"Thumbnail", constraints:false});
                 Product.belongsTo(models.ProductBrand);
                 Product.hasMany(models.ProductSpecification);
             }

@@ -12,7 +12,8 @@ export const type=`
 
     type UserAccountMutationResult{
         UserAccount:UserAccount!
-        User:User        
+        User:User  
+        Customer:Customer      
     }
 `;
 
@@ -39,6 +40,18 @@ function setUserAccountOnEntity({UserAccountInstance,EntityId,EntityType},transa
                 });
             });
             break;
+        case 'CUSTOMER':
+            return db.Customer.findById(EntityId,{transaction})
+            .then(customer=>{
+                return customer.update({UserAccountId:UserAccountInstance.id},{fields:['UserAccountId'],transaction})
+                .then(customer=>{
+                    return {
+                        UserAccount:UserAccountInstance,
+                        Customer:customer
+                    };
+                });
+            });
+            break;
         default:
             return Promise.reject('Entity type is invalid.'); 
     }
@@ -54,10 +67,15 @@ export const resolver={
                         .spread((rowsUpdated,instanceRows)=>{
                             if(rowsUpdated>0){
                                 let userAccount =  instanceRows[0];
-                                return userAccount.getUser().then((user)=>({
-                                    UserAccount:userAccount,
-                                    User:user
-                                }));
+                                return userAccount.getUser({transaction:t}).then((user)=>{
+                                    return userAccount.getCustomer({transaction:t}).then(customer=>(
+                                        {
+                                            UserAccount:userAccount,
+                                            User:user,
+                                            Customer:customer
+                                        }
+                                        ));
+                                });
                             }
                             else
                                 return null;
@@ -71,10 +89,15 @@ export const resolver={
                     if(rowsDeleted>0)
                         return db.UserAccount.findById(id,{paranoid:false,transaction:t})
                             .then(userAccount=>{
-                                return userAccount.getUser().then(user=>({
-                                    User:user,
-                                    UserAccount:userAccount
-                                }));
+                                return userAccount.getUser({transaction:t}).then((user)=>{
+                                    return userAccount.getCustomer({transaction:t}).then(customer=>(
+                                        {
+                                            UserAccount:userAccount,
+                                            User:user,
+                                            Customer:customer
+                                        }
+                                        ));
+                                });
                             });
                     else
                         return null;

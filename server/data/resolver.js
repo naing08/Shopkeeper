@@ -9,6 +9,8 @@ import {resolver as resolver_Product} from './Product';
 import {resolver as resolver_User} from './User';
 import {resolver as resolver_UserAccount} from './UserAccount';
 import {resolver as resolver_Customer} from './Customer';
+import {resolver as resolver_UserSession} from './UserSession';
+import {resolver as resolver_CustomerOrder} from './CustomerOrder';
 const Resolver={
     DateTime:new GraphQLScalarType({
         name: 'DateTime',
@@ -76,5 +78,13 @@ Object.assign(Resolver.Mutation,resolver_UserAccount.mutation);
 Object.assign(Resolver,resolver_Customer.type);
 Object.assign(Resolver.Query,resolver_Customer.query);
 Object.assign(Resolver.Mutation,resolver_Customer.mutation);
+
+Object.assign(Resolver,resolver_UserSession.type);
+Object.assign(Resolver.Query,resolver_UserSession.query);
+Object.assign(Resolver.Mutation,resolver_UserSession.mutation);
+
+Object.assign(Resolver,resolver_CustomerOrder.type);
+Object.assign(Resolver.Query,resolver_CustomerOrder.query);
+Object.assign(Resolver.Mutation,resolver_CustomerOrder.mutation);
 
 export default  Resolver;

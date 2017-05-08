@@ -7,6 +7,8 @@ import {type as type_Product, query as query_Product,mutation as mutation_Produc
 import {type as type_User,query as query_User,mutation as mutation_User} from './User'
 import {type as type_UserAccount, query as query_UserAccount,mutation as mutation_UserAccount} from './UserAccount';
 import {type as type_Customer, query as query_Customer,mutation as mutation_Customer} from './Customer';
+import {type as type_UserSession, query as query_UserSession,mutation as mutation_UserSession} from './UserSession';
+import {type as type_CustomerOrder, query as query_CustomerOrder, mutation as mutation_CustomerOrder} from './CustomerOrder';
 
 const Schema=`
     scalar DateTime
@@ -23,6 +25,8 @@ const Schema=`
     ${type_User}
     ${type_UserAccount}
     ${type_Customer}
+    ${type_UserSession}
+    ${type_CustomerOrder}
     type Query{
         ${query_ProductBrand}
         ${query_ProductGroup}
@@ -30,6 +34,8 @@ const Schema=`
         ${query_User}
         ${query_UserAccount}
         ${query_Customer}
+        ${query_UserSession}
+        ${query_CustomerOrder}
     }
     
     type Mutation{
@@ -39,6 +45,8 @@ const Schema=`
         ${mutation_User}
         ${mutation_UserAccount}
         ${mutation_Customer}
+        ${mutation_UserSession}
+        ${mutation_CustomerOrder}
     }
     
     

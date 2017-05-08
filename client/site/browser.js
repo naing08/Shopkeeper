@@ -12,12 +12,12 @@ import Preference from '../../common/Preference';
 import  '../../common/dateUtils';
 import Accounting from 'accounting';
 import {ApolloProvider} from 'react-apollo';
-import createApolloClient from '../../common/apollo/createApolloClient';
+import createApolloClient from '../../common/createApolloClient';
 import { createNetworkInterface } from 'apollo-client';
 import MuiThemeProvider from 'material-ui/styles/MuiThemeProvider';
 import {default as theme} from '../../common/siteMuiTheme';
 import getMuiTheme from 'material-ui/styles/getMuiTheme';
-import createSiteStore from '../../common/apollo/createSiteStore';
+import createSiteStore from './reducer/createSiteStore';
 // Needed for onTouchTap
 // http://stackoverflow.com/a/34015469/988941
 injectTapEventPlugin();
@@ -42,6 +42,10 @@ const client = createApolloClient({
 });
 
 const store = createSiteStore({client});
+window.siteName="Shopkeeper";
+window.setTitle=title=>{
+    document.title = `${title} - ${window.siteName}`;
+}
 render(
     <MuiThemeProvider muiTheme={getMuiTheme(theme)}>
         <ApolloProvider client={client} store={store}>

@@ -5,15 +5,18 @@
  * Created by ChitSwe on 12/22/16.
  */
 import React, { PropTypes } from 'react';
-
+import muiThemeable from 'material-ui/styles/muiThemeable';
 
 const scriptUrl = "/site.bundle.js";
-const siteHtml = ({ content, state }) => (
+const siteHtml = ({ content, state,title,muiTheme }) => (
     <html lang="en">
     <head>
         <meta charSet="utf-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <title>Hello</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1" />   
+        <meta name="theme-color" content={muiTheme.palette.primary1Color}/>     
+        <link rel="stylesheet" href="/style/flexboxgrid.min.css"  />
+        <link rel="stylesheet" href="/style/sitestyle.css"/>
+        <title>Shopkeeper</title>
     </head>
     <body>
     <div id="content" dangerouslySetInnerHTML={{ __html: content }} />

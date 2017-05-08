@@ -2,7 +2,7 @@ var webpack = require('webpack');
 
 module.exports = {
     entry: {
-        admin: './client/browser.js',
+        admin: './client/admin/browser.js',
         site:'./client/site/browser.js'
         //'webpack/hot/dev-server',
         //'webpack-dev-server/client?http://localhost:3132'

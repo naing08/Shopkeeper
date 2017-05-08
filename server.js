@@ -13,9 +13,9 @@ import Resolver from './server/data/resolver';
 import {default as migration} from './server/database/migration';
 import React from 'react';
 import ReactDOM from 'react-dom/server';
-import routes from './client/routes';
+import routes from './client/admin/routes';
 import siteRoutes from './client/site/routes';
-import createApolloClient from './common/apollo/createApolloClient';
+import createApolloClient from './common/createApolloClient';
 import { createNetworkInterface } from 'apollo-client';
 import { match, RouterContext } from 'react-router';
 import 'isomorphic-fetch';
@@ -28,33 +28,41 @@ import webpackConfig from './webpack.config';
 import latency from 'express-simulate-latency';
 import {default as adminTheme} from './common/adminMuiTheme';
 import {default as siteTheme} from './common/siteMuiTheme';
-import createAdminStore from './common/apollo/createAdminStore';
-import createSiteStore from './common/apollo/createSiteStore';
+import createAdminStore from './client/admin/reducer/createAdminStore';
+import createSiteStore from './client/site/reducer/createSiteStore';
+import cookieParser from 'cookie-parser';
 injectTapEventPlugin();
 import {default as AdminHtml} from './server/adminHtml';
 import {default as SiteHtml} from './server/siteHtml';
+import   './server/security/auth';
+import passport from 'passport';
+import {loginHandler} from './server/security/login';
 const app = new Express();
-const apiRouter = new Router();
+const appRouter = new Router();
 const port = 3232;
 const graphqlUrl=`http://localhost:${port}/graphql`;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
+app.use(passport.initialize());
+app.use(cookieParser());
 app.use(latency({ min: 100, max: 500 }));
-app.use('/graphql', apolloExpress( (req) => {
+app.post('/login',loginHandler);
+app.use('/graphql',passport.authenticate('bearer-custom',{session:false}), apolloExpress( (req) => {
     return {
         schema: makeExecutableSchema({
             typeDefs: Schema,
             resolvers:Resolver,
             allowUndefinedInResolve: true,
         }),
-        context: {  }
+        context: { user:req.user }
     }
 }));
+
 // graphiql endpoint
 app.use('/graphiql', graphiqlExpress({
     endpointURL: '/graphql',
 }));
-apiRouter.get('/employee',(req,res)=>{
+appRouter.get('/employee',(req,res)=>{
     db.Employee.findAll().then(data=>{
         res.json(
             data
@@ -65,8 +73,9 @@ apiRouter.get('/employee',(req,res)=>{
     })
 });
 app.use(Express.static('public'));
-app.use('/api',apiRouter);
+app.use('/api',appRouter);
 function renderHtml(req,res,renderProps,isAdminSite){
+    
     const client = createApolloClient({
         ssrMode: true,
         networkInterface: createNetworkInterface({
@@ -91,7 +100,7 @@ function renderHtml(req,res,renderProps,isAdminSite){
         store = createSiteStore(({client}));
     }
 
-    const component = (
+    const component = (     
         <MuiThemeProvider muiTheme={muiTheme}>
             <ApolloProvider client={client} store={store}>
                 <RouterContext {...renderProps} />
@@ -112,12 +121,23 @@ function renderHtml(req,res,renderProps,isAdminSite){
             (<SiteHtml
                 content={content}
                 state={Object.assign({ apollo: { data } },state)}
+                muiTheme={siteTheme}
             />);
         res.send(`<!doctype html>\n${ReactDOM.renderToStaticMarkup(html)}`);
         res.end();
     }).catch(e => console.error('RENDERING ERROR:', e)); // eslint-disable-line no-console
 }
-app.use((req, res) => {
+
+app.get('/admin/Login',(req,res)=>{
+    match({ routes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
+        renderHtml(req,res,renderProps,true);
+    });
+});
+
+
+
+app.use('/admin',passport.authenticate('cookie',{session:false,failureRedirect:'/admin/Login'}),(req, res) => {
+    req.headers.authorization =  `Bearer ${req.cookies.access_token}`;
     match({ routes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
         if (redirectLocation) {
             res.redirect(redirectLocation.pathname + redirectLocation.search);
@@ -127,7 +147,20 @@ app.use((req, res) => {
         } else if (renderProps) {
             renderHtml(req,res,renderProps,true);
         } else {//admin routes not match
-            match({routes:siteRoutes,location:req.originalUrl},(error,redirectLocation,renderProps)=>{
+            res.status(404).send('Not found');
+        }
+    });
+});
+
+app.get('/Login',(req,res)=>{
+    match({ routes:siteRoutes, location: req.originalUrl }, (error, redirectLocation, renderProps) => {
+        renderHtml(req,res,renderProps,false);
+    });
+});
+
+app.use(passport.authenticate('cookie',{session:false,failureRedirect:'/Login'}),(req, res) => {
+    req.headers.authorization =  `Bearer ${req.cookies.access_token}`;
+    match({routes:siteRoutes,location:req.originalUrl},(error,redirectLocation,renderProps)=>{
                if(redirectLocation)
                    res.redirect(redirectLocation.pathname + redirectLocation.search);
                else if(error) {
@@ -139,8 +172,6 @@ app.use((req, res) => {
                    res.status(404).send('Not found');
                }
             });
-        }
-    });
 });
 /*
 const webpackConfig = {

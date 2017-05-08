@@ -52,7 +52,7 @@ export const mutation=`
 export const resolver = {
 	type:{
 		Customer:{
-		  id:property('id'),
+		  id:property("id"),
 	      FullName:property('FullName'),
 	      UserAccountId:property('UserAccountId'),
 	      UserName:(user)=>(user.getUserAccount().then(account=>(account? account.UserName:null))),
@@ -74,7 +74,7 @@ export const resolver = {
 		}
 	},
 	query:{
-		Customer(_,{page,pageSize,search}){
+		Customer(_,{page,pageSize,search},context){
 			search = search? `%${search}%`: '%';
           const where = {
               $or:search ==='%'?true:{

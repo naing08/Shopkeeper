@@ -15,7 +15,8 @@ export const type=`
         ProductGroup:ProductGroup
         ProductGroupId:Int
         DefaultPhoto:ProductPhoto
-        Thumbnail:ProductPhoto
+        DefaultPhotoUrl:String
+        Overview:String
         Photo:[ProductPhoto]
         ProductBrand:ProductBrand
         ProductBrandId:Int
@@ -26,7 +27,6 @@ export const type=`
     }
     type ProductPhoto{
         id:Int!
-        IsThumbnail:Boolean!
         Format:String!
         FileName:String!
         createdAt:Date!
@@ -43,9 +43,11 @@ export const type=`
     }
     type ProductMutationResult{
         instance:Product
-        errors:[error],
-        specErrors:[[error]],
-        photoErrors:[[error]]
+        errors:[error]
+    }
+    type SpecMutationResult{
+        instance:ProductSpecification
+        errors:[error]
     }
     type ProductSpecification{
         Name:String!
@@ -53,29 +55,38 @@ export const type=`
         id:Int!
         ProductId:Int!
     }
+
+    input InputProduct{
+        Alias:String!
+        Name:String!
+        Price:Float!
+        Description:String
+        ProductGroupId:Int
+        Overview:String
+        ProductBrandId:Int
+        DefaultPhoto:InputProductPhoto
+    }
     input InputProductSpec{
         Name:String!
         Value:String!
-        id:Int
-        ProductId:Int!
     }
     input InputProductPhoto{
-        id:Int
-        IsThumbnail:Boolean!
         Format:String!
         FileName:String!
-        ProductId:Int!
     }
 `;
 export const query = `
-    Product(ProductGroupId:Int,page:Int!,pageSize:Int!,search:String):Products
+    Product(ProductGroupId:Int,page:Int,pageSize:Int!,search:String,paranoid:Boolean):Products
     ProductById(id:Int!):Product
 `;
 export const mutation=`
     deleteProduct(id:Int!):Product
     undoDeleteProduct(id:Int!):Product
     deleteProductSpec(id:Int!):Int
-    Product(Alias:String!,Name:String!,Price:Float!,Description:String,ProductGroupId:Int,DefaultPhotoId:Int,ThumbnailId:Int,ProductBrandId:Int,id:Int,ProductSpec:[InputProductSpec]!,Photo:[InputProductPhoto]!):ProductMutationResult
+    createProduct(product:InputProduct):ProductMutationResult
+    updateProduct(id:Int!,product:InputProduct):ProductMutationResult
+    saveProductSpec(id:Int!,spec:[InputProductSpec]):[SpecMutationResult]
+    saveProductPhoto(id:Int!,photo:InputProductPhoto):ProductPhoto
 `;
 
 
@@ -88,14 +99,15 @@ export const resolver={
             Price:property('Price'),
             Description:property('Description'),
             ProductGroupId:property('ProductGroupId'),
+            Overview:property('Overview'),
+            DefaultPhotoUrl:product=>{
+                return product.getDefaultPhoto().then(photo=>photo? cloudinary.url(photo.FileName):'');
+            },
             ProductGroup(product){
                 return product.getProductGroup();
             },
             DefaultPhoto(product){
                 return product.getDefaultPhoto();
-            },
-            Thumbnail(product){
-                return product.getThumbnail();
             },
             Photo(product){
                 return product.getProductPhotos();
@@ -113,7 +125,6 @@ export const resolver={
         },
         ProductPhoto:{
             id:property("id"),
-            IsThumbnail:property("IsThumbnail"),
             Format:property("Format"),
             FileName:property("FileName"),
             createdAt:property("createdAt"),
@@ -131,7 +142,8 @@ export const resolver={
         }
     },
     query:{
-        Product(_,{ProductGroupId,page,pageSize,search}){
+        Product(_,{ProductGroupId,page,pageSize,search,paranoid}){
+            page = page? page: 1;
             search = search? `%${search}%`: '%';
             const where = {
                 $and:{
@@ -148,7 +160,7 @@ export const resolver={
                     }
                 }
             };
-            return PaginationHelper.getResult({db,baseQuery:db.Product,page,pageSize,where,listKey:'Product',paranoid:true});
+            return PaginationHelper.getResult({db,baseQuery:db.Product,page,pageSize,where,listKey:'Product',paranoid:paranoid});
         },
         ProductById(_,{id}){
             return db.Product.findById(id);
@@ -185,88 +197,69 @@ export const resolver={
               return db.ProductSpecification.destroy({where:{id},transaction:t});
           });
         },
-        Product(_,{id,Alias,Name,Price,Description,ProductGroupId,DefaultPhotoId,ThumbnailId,ProductBrandId,ProductSpec,Photo}){
-            return db.sequelize.transaction((t)=>{
-                return db.Product.findOrCreate({where:{id},defaults:{Alias,Name,Price,Description,ProductGroupId,DefaultPhotoId,ThumbnailId,ProductBrandId},transaction:t})
-                    .spread((instance,created)=>{
-                        let promise= null;
-                        if(created)
-                            promise = new Promise((res,rej)=>{res({instance});});
-                        else
-                            promise= instance.update({Alias,Name,Price,Description,ProductGroupId,DefaultPhotoId,ThumbnailId,ProductBrandId},{transaction:t,fields:['Alias','Name','Price','Description','ProductGroupId','DefaultPhotoId','ThumbnailId','ProductBrandId']})
-                                .then(
-                                    ()=>db.Product.findById(instance.id,{transaction:t})
-                                        .then((product)=>({instance:product}))
-                                );
-                        return promise.then(({instance})=>{
-                            const promises = [];
-                            ProductSpec.every(({id,Name,Value},index)=>{
-                                promises.push(
-                                    db.ProductSpecification.findOrCreate({where:{id},defaults:{Name,Value,ProductId:instance.id},transaction:t})
-                                        .spread((specInstance,specCreated)=>{
-                                            if(!specCreated)
-                                                return specInstance.update({Name,Value,ProductId:instance.id},{transaction:t,fields:["Name","Value","ProductId"]}).then(()=>([]));
-                                            else
-                                                return [];
-                                        }).catch((error)=>{
-                                        return new Promise ((res)=>{res(error.errors.map(e=>({key:e.path,message:e.message})));});
-                                    })
-                                );
-                                return true;
-                            });
-                            const photoPromises = [];
-                            Photo.forEach(({id,IsThumbnail,FileName,Format,ProductId},index)=>{
-                                photoPromises.push(
-                                    db.ProductPhoto.findOrCreate({where:{id},defaults:{IsThumbnail,FileName,Format,ProductId},transaction:t})
-                                        .spread((photoInstance,isPhotoCreated)=>{
-                                            let promise = null;
-                                            if(!isPhotoCreated)
-                                                promise= photoInstance.update({IsThumbnail,FileName,Format,ProductId},{transaction:t,fields:["IsThumbnail","FileName","Format","ProductId"]}).then(()=>([]));//empty array for no errors
-                                            else
-                                                promise = new Promise((response)=>{response([]);});
-                                            if(!instance.DefaultPhotoId) {//set default photo
-                                                promise = promise.then((result) => {
-                                                    return instance.update({DefaultPhotoId:photoInstance.id},{transaction:t,fields:["DefaultPhotoId"]})
-                                                        .then((defaultPhotoUpdated)=>{
-                                                            instance = defaultPhotoUpdated;
-                                                            return result;
-                                                        });
-                                                });
-                                            }
-                                            return promise.then((result)=>{
-                                                return cloudinary.moderateImage(FileName).then((moderateResult)=>{
-                                                    return result;
-                                                });
-                                            });
-                                        }).catch((error)=>{
-                                        return new Promise ((res)=>{res(error.errors.map(e=>({key:e.path,message:e.message})));});
-                                    })
-                                );
-                            });
-                            return Promise.all([
-                                Promise.all(promises),
-                                Promise.all(photoPromises)
-                            ]).then((results)=>{
-                                let specResult = results[0];
-                                let photoResult = results[1];
-                                let hasSpecError = !specResult.every((e)=>{
-                                    return e.length ===0;
+        createProduct(_,{product}){
+            let {DefaultPhoto} = product;
+            return db.sequelize.transaction(t=>{
+                return db.Product.create(product,{fields:['Alias','Name','Price','Description','ProductGroupId','DefaultPhotoId','Overview','ProductBrandId'],transaction:t})
+                .then(product=>{
+                    if(DefaultPhoto){
+                        return product.createProductPhoto(DefaultPhoto,{fields:['Format','FileName'],transaction:t})
+                            .then(photo=>{
+                                return product.setDefaultPhoto(photo,{transaction:t}).then(()=>{
+                                    return {instance:product};
                                 });
-                                let hasPhotoError = !photoResult.every((e)=>{
-                                    return e.length===0;
-                                });
-                                let result =  {instance:hasSpecError || hasPhotoError? null: instance,specErrors:specResult,photoErrors:photoResult};
-
-                                return result;
-                            });
-                        });
-                    }).catch((error)=>{
-                        if(error.errors)
+                            })
+                    }else
+                        return {instance:product};
+                })
+                .catch(error=>{
+                    if(error.errors)
                             return new Promise((resolve)=>{resolve({instance:null,errors:error.errors.map(e=>({key:e.path,message:e.message}))});});
                         else
-                            return error;
+                            throw error;
+                });
+            });
+        },
+        updateProduct(_,{id,product}){
+            return db.sequelize.transaction(t=>{
+                return db.Product.findById(id,{transaction:t})
+                    .then(findResult=>{
+                        return findResult.update(product,{fields:['Alias','Name','Price','Description','ProductGroupId','DefaultPhotoId','Overview','ProductBrandId'],transaction:t})
+                            .then(product=>({instance:product}))
+                            .catch(error=>{
+                                if(error.errors)
+                                        return new Promise((resolve)=>{resolve({instance:null,errors:error.errors.map(e=>({key:e.path,message:e.message}))});});
+                                    else
+                                        throw error;
+                            });
                     });
             });
-        }
+        },
+        saveProductSpec(_,{id,spec}){
+            return db.sequelize.transaction(t=>{
+                return db.ProductSpecification.destroy({where:{ProductId:id},transaction:t})
+                    .then(()=>{
+                        return db.Product.findById(id,{transaction:t})
+                            .then(product=>{
+                                let promises = spec.map(s=>product.createProductSpecification({...s,ProductId:id},{fields:['Value','Name','ProductId'],transaction:t})
+                                        .then(spec=>({instance:spec}))
+                                        .catch(error=>{
+                                            if(error.errors)
+                                                return new Promise((resolve)=>{resolve({instance:null,errors:error.errors.map(e=>({key:e.path,message:e.message}))});});
+                                            else
+                                                return error;
+                                        })
+                                    );
+                                return Promise.all(promises);
+                            });
+                    });
+            });
+        },
+        saveProductPhoto(_,{id,photo}){
+            return db.sequelize.transaction(t=>{
+                return db.ProductPhoto.create({...photo,ProductId:id},{fields:['Format','FileName','ProductId'],transaction:t});
+            });
+        },
+        
     }
 };
