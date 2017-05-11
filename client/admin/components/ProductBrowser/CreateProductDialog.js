@@ -16,10 +16,9 @@ class CreateProductDialog extends React.Component{
 		};
 	}
 	saveProduct(){
-		let {productEdit,create,onRequestClose,showSnackbar} = this.props;
-		let {DefaultPhoto} = productEdit? productEdit:{};
+		let {productEdit,create,onRequestClose,showSnackbar,edit} = this.props;
+		let {isValid,Alias,Name,Price,Description,ProductGroupId,Overview,ProductBrandId,DefaultPhoto} = productEdit? productEdit:{};
 		let {uploading,FileName,Format} = DefaultPhoto? DefaultPhoto:{};
-		let {isValid,Alias,Name,Price,Description,ProductGroupId,Overview,ProductBrandId} = productEdit? productEdit:{};
 		let inputDefaultPhoto = DefaultPhoto? {FileName,Format}:null;
 		if(uploading){
 			showSnackbar("Product photo is still uploading!. Please wait.");
@@ -40,9 +39,14 @@ class CreateProductDialog extends React.Component{
 						DefaultPhoto:inputDefaultPhoto
 					}
 				}
-			}).then(created=>{
+			}).then(({errors,instance})=>{
 				this.setState({busy:false,busyMessage:'', errorText:''});
-				onRequestClose();
+				if(instance)
+					onRequestClose();
+				else{
+					edit(Object.assign({},instance,{errors}));
+				}
+
 			}).catch(error=>{
 				this.setState({busy:false,busyMessage:'',errorText:error});
 			});

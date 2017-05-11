@@ -14,7 +14,7 @@ class GroupBrowser extends React.Component{
         return (
             <div className='scrollable grid' style={style}>
                 {
-                    ProductGroup.map((p,i)=>(<GroupItemCard {...p} ParentGroupId={parentGroupId} key = {p.id}/>))
+                    ProductGroup? ProductGroup.map((p,i)=>(<GroupItemCard {...p} ParentGroupId={parentGroupId} key = {p.id}/>)): null
                 }
             </div>
         );

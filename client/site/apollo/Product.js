@@ -8,9 +8,6 @@ const fragments={
    id,
    Alias
    Name
-   Thumbnail{
-    url
-   }
    DefaultPhoto{
     url
    }
@@ -91,9 +88,7 @@ query productByIdQuery($id:Int!){
             id
             url
         }
-        Thumbnail{
-            url
-        }
+        
         ProductBrand{
             Alias
             Name
@@ -106,7 +101,6 @@ query productByIdQuery($id:Int!){
         }
         Photo{
             id
-            IsThumbnail
             Format
             FileName
             ProductId

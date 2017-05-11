@@ -24,6 +24,8 @@ export const type=`
         createdAt:DateTime!
         deletedAt:DateTime
         ProductSpec:[ProductSpecification]
+        ProductPrice:[ProductPrice]
+        RelatedProducts:[Product]
     }
     type ProductPhoto{
         id:Int!
@@ -56,6 +58,14 @@ export const type=`
         ProductId:Int!
     }
 
+    type ProductPrice{
+        id:Int!
+        ProductId:Int!
+        PriceBookId:Int!
+        PriceBookName:String!
+        Price:Float!
+    }
+
     input InputProduct{
         Alias:String!
         Name:String!
@@ -74,10 +84,16 @@ export const type=`
         Format:String!
         FileName:String!
     }
+
+    input InputProductPrice{
+        id:Int!
+        Price:Float!
+    }
 `;
 export const query = `
     Product(ProductGroupId:Int,page:Int,pageSize:Int!,search:String,paranoid:Boolean):Products
     ProductById(id:Int!):Product
+    searchProductByKeyWord(keyWord:String,limit:Int!):[Product]
 `;
 export const mutation=`
     deleteProduct(id:Int!):Product
@@ -87,6 +103,12 @@ export const mutation=`
     updateProduct(id:Int!,product:InputProduct):ProductMutationResult
     saveProductSpec(id:Int!,spec:[InputProductSpec]):[SpecMutationResult]
     saveProductPhoto(id:Int!,photo:InputProductPhoto):ProductPhoto
+    setProductDefaultPhoto(id:Int!,PhotoId:Int!):Product
+    deleteProductPhoto(id:Int!,PhotoId:Int!):Product
+    saveProductPrice(id:Int!,Price:[InputProductPrice]):Product
+    createNewPriceBook(id:Int!,PriceBookName:String!):ProductPrice
+    addRelatedProduct(id:Int!,relatedId:Int!):Int
+    removeRelatedProduct(id:Int!,relatedId:Int!):Boolean
 `;
 
 
@@ -120,8 +142,13 @@ export const resolver={
             deletedAt:property('deletedAt'),
             ProductSpec(product){
                 return product.getProductSpecifications();
+            },
+            ProductPrice(product){
+                return product.getProductPrices();
+            },
+            RelatedProducts(product){
+                return product.getRelatedProducts();
             }
-
         },
         ProductPhoto:{
             id:property("id"),
@@ -133,6 +160,15 @@ export const resolver={
             url(photo){
                  return photo.IsThumbnail? cloudinary.thumb(photo.FileName):cloudinary.url(photo.FileName);
             }
+        },
+        ProductPrice:{
+            id:property("id"),
+            ProductId:property("ProductId"),
+            PriceBookId:property("PriceBookId"),
+            PriceBookName:(productPrice)=>{
+                return productPrice.getPriceBook().then(priceBook=>(priceBook.Name));
+            },
+            Price:property('Price')
         },
         ProductSpecification:{
             id:property("id"),
@@ -161,6 +197,19 @@ export const resolver={
                 }
             };
             return PaginationHelper.getResult({db,baseQuery:db.Product,page,pageSize,where,listKey:'Product',paranoid:paranoid});
+        },
+        searchProductByKeyWord(_,{keyWord,limit}){
+            const where={
+                        $or: keyWord ==='%' ? true: {
+                            Alias:{
+                                $like:keyWord
+                            },
+                            Name:{
+                                $like:keyWord
+                            }
+                        }
+                    };
+            return db.Product.findAll({where,limit,order:['Alias','Name']});
         },
         ProductById(_,{id}){
             return db.Product.findById(id);
@@ -260,6 +309,101 @@ export const resolver={
                 return db.ProductPhoto.create({...photo,ProductId:id},{fields:['Format','FileName','ProductId'],transaction:t});
             });
         },
+        setProductDefaultPhoto(_,{id,PhotoId}){
+            return db.sequelize.transaction(t=>{
+                return db.Product.findById(id,{transaction:t})
+                .then(product=>{
+                    return db.ProductPhoto.findById(PhotoId,{transaction:t})
+                        .then(photo=>{
+                            return product.setDefaultPhoto(photo,{transaction:t})
+                        })
+                });
+            });
+        },
+
+        deleteProductPhoto(_,{id,PhotoId}){
+            return db.sequelize.transaction(t=>{
+                return db.ProductPhoto.destroy({where:{id:PhotoId},transaction:t})
+                .then(()=>{
+                    return db.Product.findById(id,{transaction:t}).then(
+                            product=>{
+                                if(product.DefaultPhotoId === PhotoId)
+                                    {
+                                        return product.getProductPhotos({transaction:t,limit:1}).then(
+                                                                                photo=>{
+                                                                                    if(photo.length>0){
+                                                                                        return product.setDefaultPhoto(photo[0]);
+                                                                                    }else
+                                                                                        return product;
+                                                                                }
+                                                                            );
+                                    }else
+                                        return product;
+                            }
+                        );
+                });
+            });
+        },
+
+        saveProductPrice(_,{id,Price}){
+            return db.sequelize.transaction(t=>{
+                let promises = Price.map(({id,Price})=>(db.ProductPrice.update({Price},{fields:['Price'],where:{id},transaction:t})));
+                return Promise.all(promises).then(()=>{
+                    return db.Product.findById(id).then(product=>{
+                        return db.ProductPrice.findAll({
+                            where:{
+                                $and:{
+                                    "$PriceBook.Name$":'Default',
+                                    ProductId:id
+                                }
+                            },
+                            include:[db.PriceBook],
+                            transaction:t}).then(prices=>{
+                                if(prices && prices.length>0)
+                                    return product.update({Price:prices[0].Price},{fields:['Price'],transaction:t});
+                                else
+                                    return product;
+                            });
+                    });
+                });
+            });
+        },
+        createNewPriceBook(_,{id,PriceBookName}){
+            return db.sequelize.transaction(t=>{
+                return db.PriceBook.create({Name:PriceBookName},{transaction:t}).then(pricebook=>{
+                  return db.sequelize.query(`INSERT INTO "ProductPrice"("createdAt","updatedAt","ProductId","PriceBookId","Price") SELECT CURRENT_TIMESTAMP,CURRENT_TIMESTAMP,"id" , ${pricebook.id} AS PriceBookId,"Price"  FROM "Product"`,{transaction:t})
+                  .then(()=>{
+                    return db.ProductPrice.findAll({transaction:t,where:{$and:{ProductId:id, PriceBookId:pricebook.id}}})
+                        .then(productPrices=>(productPrices[0]));
+                  });
+                });
+            });
+        },
+
+        addRelatedProduct(_,{id,relatedId}){
+            return db.sequelize.transaction(t=>{
+                return db.Product.findById(id,{transaction:t}).then(product=>{
+                    return product.getRelatedProducts({where:{id:relatedId},transaction:t}).then(relatedProducts=>{
+                        if(relatedProducts && relatedProducts.length>0)
+                            return null;
+                        else
+                            return db.Product.findById(relatedId,{transaction:t}).then(relatedProduct=>{
+                                return product.addRelatedProduct(relatedProduct,{transaction:t}).then(()=> relatedProduct.id);
+                            });
+                    })
+                })
+            });
+        },
+        removeRelatedProduct(_,{id,relatedId}){
+            return db.sequelize.transaction(t=>{
+                return db.Product.findById(id,{transaction:t})
+                .then(product=>{
+                    return db.Product.findById(relatedId,{transaction:t}).then(related=>{
+                        return product.removeRelatedProduct(related);
+                    })
+                });
+            })
+        }
         
     }
 };

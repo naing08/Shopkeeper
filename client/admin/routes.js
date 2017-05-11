@@ -9,7 +9,7 @@ import CustomerBrowser from './components/CustomerManagement/CustomerBrowser';
 import CustomerViewer from './components/CustomerManagement/CustomerViewer';
 import Login from './components/Login';
 import CustomerOrderPage from './components/CustomerOrder/index';
-import CreateProductPage from './components/ProductBrowser/CreateProductPage';
+import ProductPage from './components/ProductPage/index';
 import {default as Test} from '../Test';
 export default (
     <Route component={Layout} path="/admin">
@@ -20,7 +20,7 @@ export default (
         <Route component={CustomerBrowser} path="/admin/CustomerManagement" />
         <Route component={CustomerViewer} path="/admin/Customer(/:id)"/>
         <Route component={CustomerOrderPage} path="/admin/CustomerOrder(/:id)"/>
-        <Route component={CreateProductPage} path="/admin/Product/create(/:groupId)" />
+        <Route component={ProductPage} path="/admin/ProductDetail(/:id)" />
         <Route component={Login} path="/admin/Login"/>
         <Route component={Test} path="/Test"/>
     </Route>

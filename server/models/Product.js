@@ -42,6 +42,16 @@ module.exports=(sequelize,DataTypes)=>{
                 Product.belongsTo(models.ProductPhoto,{as:"DefaultPhoto",constraints:false});
                 Product.belongsTo(models.ProductBrand);
                 Product.hasMany(models.ProductSpecification);
+                Product.belongsToMany(Product,{
+                    as:"RelatedProducts",
+                    through:"RelatedProduct",
+                    foreignKey:"ProductId"
+                });
+                Product.belongsToMany(Product,{
+                    as :"ProductsInRelationship",
+                    through:"RelatedProduct",
+                    foreignKey:"RelatedProductId"
+                });
             }
         }
     });

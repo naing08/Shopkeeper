@@ -42,11 +42,12 @@ const query = graphql(PRODUCT_QUERY,{
             }
         };
     },
-    props({ownProps:{parentGroupId,search},data:{loading,Products:{page,hasMore,pageSize,Product},fetchMore,refetch}}){
+    props({ownProps:{parentGroupId,search,pageSize},data:{loading,Products},fetchMore,refetch}){
+        let {page,hasMore,Product}= Products? Products: {};
         return {
             parentGroupId,
             loading,
-            page,
+            page:page? page: 1,
             pageSize,
             hasMore,
             Product,
@@ -73,6 +74,28 @@ const query = graphql(PRODUCT_QUERY,{
             },
             refetch
         }
+    }
+});
+
+
+const SEARCH_PRODUCT_BY_KEYWORD_QUERY = gql`
+query searchProductByKeyWord($keyWord:String,$limit:Int!){
+    searchResult:searchProductByKeyWord(keyWord:$keyWord,limit:$limit){
+        ...ProductItem
+    }
+}
+${fragments.Product}
+`;
+
+const searchProductByKeyWord = graphql(SEARCH_PRODUCT_BY_KEYWORD_QUERY,{
+    props({ownProps,data:{refetch,loading,searchResult}}){
+        return {
+            searchProductByKeyWord:(keyWord,limit)=>{
+                return refetch({keyWord,limit});
+            },
+            searchingProductByKeyWord:loading,
+            productSearchResult:searchResult
+        };
     }
 });
 
@@ -166,6 +189,8 @@ query productByIdQuery($id:Int!){
         DefaultPhoto{
             url
             id
+            FileName
+            Format
         }
 
         ProductBrandId
@@ -187,9 +212,17 @@ query productByIdQuery($id:Int!){
             ProductId
             url
         }
-        
+        ProductPrice{
+            id
+            PriceBookName
+            Price
+        }
+        RelatedProducts{
+            ...ProductItem
+        }
     }
 }
+${fragments.Product}
 `;
 
 const productByIdQuery=graphql(PRODUCT_BY_ID_QUERY,{
@@ -308,16 +341,196 @@ mutation deleteProductSpecification($id:Int!){
 const deleteProductSpecification = graphql (DELETE_PRODUCT_SPECIFICATION_QUERY,{
     props({ownProps,mutate}){
         return {
-            destroy(id){
+            deleteProductSpecification(id){
                 return mutate({
                     variables:{id}
                 });
+            }
+        };
+    }
+});
+const SAVE_PRODUCT_SPEC_MUTATION = gql`
+    mutation saveProductSpec($id:Int!,$spec:[InputProductSpec]){
+        saveProductSpec(id:$id,spec:$spec){
+            instance{
+                id
+                Name
+                Value
+            }
+            errors{
+                key
+                message
+            }
+        }
+    }
+`;
+
+const saveProductSpecifications = graphql(SAVE_PRODUCT_SPEC_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            saveProductSpecifications(id,spec){
+                return mutate({
+                    variables:{id,spec}
+                });
+            }
+        };
+    }
+});
+
+const SAVE_PRODUCT_PHOTO_MUTATION = gql`
+    mutation saveProductPhoto($id:Int!,$photo:InputProductPhoto){
+        savedPhoto:saveProductPhoto(id:$id,photo:$photo){
+            id
+            Format
+            FileName
+            url
+        }
+    }
+`;
+const saveProductPhoto = graphql(SAVE_PRODUCT_PHOTO_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            saveProductPhoto(id,photo){
+                return mutate({
+                    variables:{id,photo}
+                });
+            }
+        };
+    }
+});
+
+
+const SAVE_PRODUCT_PRICE_MUTATION = gql`
+    mutation saveProductPrice($id:Int!,$Price:[InputProductPrice]){
+        saveProductPrice(id:$id,Price:$Price){
+            Price
+            id
+        }
+    }
+`;
+const saveProductPrice = graphql(SAVE_PRODUCT_PRICE_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            saveProductPrice(id,Price){
+                return mutate({
+                    variables:{id,Price}
+                });
+            }
+        };
+    }
+});
+
+const SET_PRODUCT_DEFAULT_PHOTO_MUTATION= gql`
+    mutation setProductDefaultPhoto($id:Int!,$PhotoId:Int!){
+        setProductDefaultPhoto(id:$id,PhotoId:$PhotoId){
+            id
+            DefaultPhoto{
+                id
+                url
+                FileName
+                Format
+            }
+        }
+    }
+`;
+
+const setProductDefaultPhoto = graphql(SET_PRODUCT_DEFAULT_PHOTO_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            setProductDefaultPhoto(id,PhotoId){
+                return mutate({
+                    variables:{id,PhotoId}
+                });
+            }
+        };
+    }
+});
+
+const DELETE_PRODUCT_PHOTO_MUTATION= gql`
+    mutation deleteProductPhoto($id:Int!,$PhotoId:Int!){
+        deleteProductPhoto(id:$id,PhotoId:$PhotoId){
+            id
+            DefaultPhoto{
+                id
+                url
+                FileName
+                Format
+            }
+        }
+    }
+`;
+
+const deleteProductPhoto = graphql(DELETE_PRODUCT_PHOTO_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            deleteProductPhoto(id,PhotoId){
+                return mutate({
+                    variables:{id,PhotoId}
+                });
+            }
+        };
+    }
+});
+
+const CREATE_NEW_PRICE_BOOK_MUTATION= gql`
+    mutation createNewPriceBook($id:Int!, $PriceBookName:String!){
+        createNewPriceBook(id:$id,PriceBookName:$PriceBookName){
+            id
+            PriceBookId
+            PriceBookName
+            Price
+        }
+    }
+`;
+
+const createNewPriceBook = graphql(CREATE_NEW_PRICE_BOOK_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            createNewPriceBook(id,PriceBookName){
+                return  mutate({
+                    variables:{id,PriceBookName}
+                });
+            }
+        };
+    }
+});
+
+const ADD_RELATED_PRODUCT_MUTATION = gql `
+mutation addRelatedProduct($id:Int!,$relatedId:Int!){
+  RelatedProductId:addRelatedProduct(id:$id,relatedId:$relatedId)
+}
+`;
+
+const addRelatedProduct = graphql(ADD_RELATED_PRODUCT_MUTATION,{
+    props({ownProps,mutate}){
+        return{
+            addRelatedProduct(id,relatedId){
+                return mutate({
+                    variables:{id,relatedId}
+                    });
             }
         }
     }
 });
 
+const REMOVE_RELATED_PRODUCT_MUTATION = gql`
+    mutation removeRelatedProduct($id:Int!,$relatedId:Int!){
+        removeRelatedProduct(id:$id,relatedId:$relatedId)
+    }
+`;
 
-export {undoDestroyQuery,destroyQuery,fragments,query,updateProductQuery,createProductQuery,productByIdQuery,deleteProductSpecification};
+const removeRelatedProduct=graphql(REMOVE_RELATED_PRODUCT_MUTATION,{
+    props({ownProps,mutate}){
+        return {
+            removeRelatedProduct(id,relatedId){
+                return mutate({
+                    variables:{id,relatedId}
+                });
+            }
+        };
+    }
+});
+
+export {undoDestroyQuery,destroyQuery,fragments,query,updateProductQuery,createProductQuery,productByIdQuery,deleteProductSpecification,saveProductSpecifications,saveProductPhoto,setProductDefaultPhoto,deleteProductPhoto,saveProductPrice,createNewPriceBook,searchProductByKeyWord,addRelatedProduct,removeRelatedProduct};
 export default query;
 

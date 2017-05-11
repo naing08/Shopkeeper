@@ -4,7 +4,7 @@ import {withRouter} from 'react-router';
 class ProductCard extends React.Component{
 	render(){
 		let {Product,router} = this.props;
-		let {Alias,Name,Thumbnail,DefaultPhoto,Price,id} = Product;
+		let {Alias,Name,DefaultPhoto,Price,id} = Product;
 		return (
 				<div className=" col-lg-3 col-md-4 col-sm-6 col-xs-12 grid-item" >
 					<a href="#" onClick={(e)=>{e.preventDefault();router.push(`/Product/${id}`)}} style={{textDecoration:"none"}}>

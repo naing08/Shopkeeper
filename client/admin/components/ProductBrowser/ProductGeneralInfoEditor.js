@@ -48,11 +48,11 @@ class ProductGeneralInfoEditor extends React.Component{
         return (
             <div className="row" style={{backgroundColor:'#fff',textAlign:'center'}}>
                 <div style={{padding:'20px 0',flexGrow:1}}>
-                    <TextField hintText="Alias" ref="Alias" floatingLabelText="Alias" name="Alias" errorText={errors.Alias} value={Alias} onChange={(e)=>{this.props.edit({Alias:e.target.value});}}/>
+                    <TextField hintText="Alias" ref="Alias" floatingLabelText="Alias" name="Alias" id="Alias" errorText={errors.Alias} value={Alias} onChange={(e)=>{this.props.edit({Alias:e.target.value});}}/>
                     <br/>
-                    <TextField hintText="Name" ref="Name" floatingLabelText="Name" name="Name" value={Name} errorText={errors.Name} onChange={(e)=>{this.props.edit({Name:e.target.value});}}/>
+                    <TextField hintText="Name" ref="Name" floatingLabelText="Name" name="Name" id="Name" value={Name} errorText={errors.Name} onChange={(e)=>{this.props.edit({Name:e.target.value});}}/>
                     <br/>
-                    <CurrencyEditor hintText="Price" floatingLabelText="Price" name="Price" value={Price} errorText={errors.Price} onChange={x=>{this.props.edit({Price:x});}}/>
+                    <CurrencyEditor hintText="Price" floatingLabelText="Price" name="Price" id="Price" value={Price} errorText={errors.Price} onChange={x=>{this.props.edit({Price:x});}}/>
                     <br/>
                     <AutoComplete
                         hintText="Product Brand"
@@ -65,10 +65,12 @@ class ProductGeneralInfoEditor extends React.Component{
                         filter={AutoComplete.noFilter}
                         openOnFocus={true}
                         loading={brandListLoading}
+                        id="ProductBrand"
+                        name="ProductBrand"
                     />
                 </div>
                 <div style={{flexGrow:1}}>
-                    <TextField style={{width:'300px',textAlign:'left'}} hintText="Description" multiLine={true} rows={5} floatingLabelText="Description" errorText={errors.Description} value={Description} onChange={(e)=>{this.props.edit({Description:e.target.value});}}/>
+                    <TextField style={{width:'300px',textAlign:'left'}} hintText="Description"  id="Description" multiLine={true} rows={5} floatingLabelText="Description" errorText={errors.Description} value={Description} onChange={(e)=>{this.props.edit({Description:e.target.value});}}/>
                     <Dropzone
                             multiple={false}
                             accept="image/*"
