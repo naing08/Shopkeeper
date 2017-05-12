@@ -19,6 +19,7 @@ class ProductCard extends React.Component{
 							</div>
 						</Card>
 					</a>
+					<input type="button" value="Click" onClick={()=>{router.push("/ProductBrowser/null");}}/>
 				</div>
 			);
 	}

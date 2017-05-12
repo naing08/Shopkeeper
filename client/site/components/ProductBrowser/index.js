@@ -59,5 +59,6 @@ const TheBrowser = compose(
 
 export default ({params})=>{
 	let {id} = params? params:{};
+	id = isNaN(id)? null: id;
 	return (<TheBrowser parentGroupId={id}/>);
 };
