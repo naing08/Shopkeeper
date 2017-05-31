@@ -25,29 +25,30 @@ function login(username,password,remember){
 						.then(session=>{
 							return userAccount.getUser().then(user=>{
 								if(user)
-									return {type:'USER',Photo:user.Photo,FullName:user.FullName};
+									return {type:'USER',Photo:user.Photo,FullName:user.FullName,EntityId:user.id};
 								else
 									return userAccount.getCustomer().then(customer=>{
 										if(customer)
-											return {type:'CUSTOMER',Photo:customer.Photo,FullName:customer.FullName};
+											return {type:'CUSTOMER',Photo:customer.Photo,FullName:customer.FullName,EntityId:customer.id};
 										else
 											return user.getDealer().then(dealer=>{
 												if(dealer)
-													return {type:'DEALER',Photo:dealer.Photo,FullName:dealer.FullName};
+													return {type:'DEALER',Photo:dealer.Photo,FullName:dealer.FullName,EntityId:dealer.id};
 												else
 													return null;
-											})
-									})
+											});
+									});
 							}).then(accountType=>{
-								let {type,Photo,FullName}=accountType? accountType:{};
+								let {type,Photo,FullName,EntityId}=accountType? accountType:{};
 								return {
 									success:true,
 									access_token:sessionKey,
 									user_id:userAccount.id,
 									user_name:username,
 									account_type:type,
-									profile_pic:cloudinary.url(Photo),
-									full_name:FullName
+									profile_pic:Photo?cloudinary.url(Photo):`img/letter/letter_${FullName[0]}.png`,
+									full_name:FullName,
+									entity_id:EntityId
 								};
 							});
 						});

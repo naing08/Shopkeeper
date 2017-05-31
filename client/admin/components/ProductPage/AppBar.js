@@ -10,10 +10,10 @@ import {compose} from 'react-apollo';
 import {connect} from 'react-redux';
 import {withRouter} from 'react-router';
 
-const AppBar=({muiTheme,title,router})=>{
+const AppBar=({muiTheme,title,router,toggleDrawer})=>{
 	let toolBar = <Toolbar style={{height:'64px',backgroundColor:muiTheme.palette.primary1Color}}>
 			        <ToolbarGroup firstChild={true}>
-			        	<IconButton touch={true} >
+			        	<IconButton touch={true} onTouchTap={toggleDrawer} >
 			                <NavigationMenu color={white} />
 			            </IconButton>
 			            <IconButton touch={true} onTouchTap={()=>{router.goBack();}}>
@@ -34,6 +34,14 @@ const AppBar=({muiTheme,title,router})=>{
 			};
 
 export default compose(
+		connect(
+            state=>({}),
+            dispatch=>({
+                toggleDrawer:()=>{
+                    dispatch({type:'ADMIN_SITE_NAV_DRAWER_TOGGLE'});
+                }
+            })
+        ),
 		muiThemeable(),
 		withRouter
 	)(AppBar);

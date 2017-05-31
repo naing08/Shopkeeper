@@ -56,7 +56,8 @@ const fetchQuery = graphql(USER_QUERY,{
             }
         };
     },
-    props({ownProps:{search},data:{loading,Users:{page,hasMore,pageSize,User},fetchMore,refetch}}){
+    props({ownProps:{search},data:{loading,Users,fetchMore,refetch}}){
+        let {page,hasMore,pageSize,User}=Users? Users: {};
         return {
             loading,
             page,

@@ -11,6 +11,10 @@ import {resolver as resolver_UserAccount} from './UserAccount';
 import {resolver as resolver_Customer} from './Customer';
 import {resolver as resolver_UserSession} from './UserSession';
 import {resolver as resolver_CustomerOrder} from './CustomerOrder';
+import {resolver as resolver_Region} from './Region';
+import {resolver as resolver_Township} from './Township';
+import {resolver as resolver_BankAccount} from './BankAccount';
+import {resolver as resolver_BankTransfer} from './BankTransfer';
 const Resolver={
     DateTime:new GraphQLScalarType({
         name: 'DateTime',
@@ -86,5 +90,21 @@ Object.assign(Resolver.Mutation,resolver_UserSession.mutation);
 Object.assign(Resolver,resolver_CustomerOrder.type);
 Object.assign(Resolver.Query,resolver_CustomerOrder.query);
 Object.assign(Resolver.Mutation,resolver_CustomerOrder.mutation);
+
+Object.assign(Resolver,resolver_Region.type);
+Object.assign(Resolver.Query, resolver_Region.query);
+Object.assign(Resolver.Mutation,resolver_Region.mutation);
+
+Object.assign(Resolver,resolver_Township.type);
+Object.assign(Resolver.Query,resolver_Township.query);
+Object.assign(Resolver.Mutation,resolver_Township.mutation);
+
+Object.assign(Resolver,resolver_BankAccount.type);
+Object.assign(Resolver.Query,resolver_BankAccount.query);
+Object.assign(Resolver.Mutation,resolver_BankAccount.mutation);
+
+Object.assign(Resolver, resolver_BankTransfer.type);
+Object.assign(Resolver.Query ,resolver_BankTransfer.query);
+Object.assign(Resolver.Mutation,resolver_BankTransfer.mutation);
 
 export default  Resolver;

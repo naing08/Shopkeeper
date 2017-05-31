@@ -9,6 +9,10 @@ import {type as type_UserAccount, query as query_UserAccount,mutation as mutatio
 import {type as type_Customer, query as query_Customer,mutation as mutation_Customer} from './Customer';
 import {type as type_UserSession, query as query_UserSession,mutation as mutation_UserSession} from './UserSession';
 import {type as type_CustomerOrder, query as query_CustomerOrder, mutation as mutation_CustomerOrder} from './CustomerOrder';
+import {type as type_Region, query as query_Region,mutation as mutation_Region} from './Region';
+import {type as type_Township, query as query_Township,mutation as mutation_Township} from './Township';
+import {type as type_BankAccount, query as query_BankAccount, mutation as mutation_BankAccount} from './BankAccount';
+import {type as type_BankTransfer, query as query_BankTransfer, mutation as mutation_BankTransfer} from './BankTransfer';
 
 const Schema=`
     scalar DateTime
@@ -17,6 +21,27 @@ const Schema=`
     type error{
         key:String
         message:String!
+    }
+
+    input paginationCriteria{
+        currentPage:Int!
+        pageSize:Int!
+    }
+
+    input criteria{
+        pagination:paginationCriteria!
+        orderBy:[[String]]!
+    }
+
+    type pagination{
+        currentPage:Int!
+        pageSize:Int!
+        offset:Int!
+        limit:Int!
+        start:Int!
+        end:Int!
+        totalRows:Int!
+        totalPages:Int!
     }
     
     ${type_ProductBrand}
@@ -27,6 +52,10 @@ const Schema=`
     ${type_Customer}
     ${type_UserSession}
     ${type_CustomerOrder}
+    ${type_Region}
+    ${type_Township}
+    ${type_BankAccount}
+    ${type_BankTransfer}
     type Query{
         ${query_ProductBrand}
         ${query_ProductGroup}
@@ -36,6 +65,9 @@ const Schema=`
         ${query_Customer}
         ${query_UserSession}
         ${query_CustomerOrder}
+        ${query_Region}
+        ${query_Township}
+        ${query_BankAccount}
     }
     
     type Mutation{
@@ -47,6 +79,9 @@ const Schema=`
         ${mutation_Customer}
         ${mutation_UserSession}
         ${mutation_CustomerOrder}
+        ${mutation_Region}
+        ${mutation_Township}
+        ${mutation_BankAccount}
     }
     
     
@@ -57,5 +92,4 @@ const Schema=`
     }
     
 `;
-
 export default Schema;

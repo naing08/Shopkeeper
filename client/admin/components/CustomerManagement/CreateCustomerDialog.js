@@ -12,8 +12,13 @@ import {
     StepLabel,
 } from 'material-ui/Stepper';
 import {updateCustomerMutation} from '../../apollo/Customer';
+import regionQuery from '../../apollo/Region';
 import {initialData} from '../../reducer/Customer';
 import LoadingIndicator from '../../../common/LoadingIndicator';
+import SelectField from 'material-ui/SelectField';
+import MenuItem from 'material-ui/MenuItem';
+import TownshipSelector from '../TownshipSelector';
+
 class CreateCustomerDialog extends React.Component{
 	constructor(){
 		super(...arguments);
@@ -36,15 +41,14 @@ class CreateCustomerDialog extends React.Component{
 
 	handleSubmit(){
 		let {CustomerEdit,update,closeDialog} = this.props;
-		let{id,FullName,PhoneNo,Email,Region,Township,Address,Photo,PhotoFormat} = CustomerEdit;
+		let{id,FullName,PhoneNo,Email,TownshipId,Address,Photo,PhotoFormat} = CustomerEdit;
 		this.setState({loading:true,loadingMessage:'Saving customer info...'});
 		return update({variables:{
 			id,
 			FullName,
 			PhoneNo,
 			Email,
-			Region,
-			Township,
+			TownshipId,
 			Address,
 			Photo,
 			PhotoFormat
@@ -88,16 +92,52 @@ class CreateCustomerDialog extends React.Component{
 
 	renderStepContent(){
 		let {activeStep,imageUploading } = this.state;
-		let {CustomerEdit,edit} = this.props;
-		let {errors,FullName,PhoneNo,Email,Region,Township,Address,PhotoUrl} = CustomerEdit;
+		let {CustomerEdit,edit,Region} = this.props;
+		Region = Region? Region:[];
+		let {errors,FullName,PhoneNo,Email,RegionId,TownshipId,Address,PhotoUrl} = CustomerEdit;
 		switch(activeStep){
 			case 0:
 				return (<div className="row around-xs">
 							<TextField hintText="Name" className="col-xs-50" floatingLabelText = "Name" errorText = {errors.FullName} value={FullName} onChange={(e)=>{edit({FullName:e.target.value});}}/>
 							<TextField hintText="Phone No" className="col-xs-50" floatingLabelText="Phone No" errorText = {errors.PhoneNo} value = {PhoneNo} onChange = {(e)=>{edit({PhoneNo:e.target.value});}}/>
 							<TextField hintText = "Email" floatingLabelText="Email" errorText = {errors.Email} value = {Email} onChange={(e)=>{edit({Email:e.target.value});}}/>
-							<TextField hintText = "Region" floatingLabelText = "Region" errorText = {errors.Region} value = {Region} onChange={(e)=>{edit({Region:e.target.value});}}/>
-							<TextField hintText = "Township" floatingLabelText = "Township" errorText = {errors.Township} value = {Township} onChange = {(e)=>{edit({Township:e.target.value});}}/>
+							<SelectField 
+								name="customer_region" 
+								value={RegionId} 
+								onChange={
+									(e,index,value)=>{
+										edit({RegionId:value,Region:Region[index].Name1});
+									}
+								}
+								floatingLabelText="Region"
+								hintText="Region"
+								errorText={errors.RegionId}
+								id="customer_region"
+								dropDownMenuProps={
+									{
+										targetOrigin:{vertical:'bottom',horizontal:'left'},
+		                        		anchorOrigin:{vertical:'top',horizontal:'left'}
+									}
+								}
+							>
+								{
+									Region? Region.map(({id,Name1,Name2},index)=>(<MenuItem value={id} primaryText={Name1} key={index}/>)):null
+								}
+							</SelectField>
+							<TownshipSelector 
+								regionId={RegionId} 
+								onChange={
+									(TownshipId,Township)=>{edit({TownshipId,Township});}
+								}
+								value={TownshipId}
+								selectFieldProps={{
+									name:"customer_township",
+									floatingLabelText:"Township",
+									hintText:"Township",
+									errorText:errors.TownshipId,
+									id:"customer_township"
+								}}
+							/>
 							<TextField hintText="Address" multiLine={true} rows={5} floatingLabelText = "Address" errorText = {errors.Address} value = {Address} onChange = {(e)=>{edit({Address:e.target.value});}}/>
 						</div>);
 				break;
@@ -192,5 +232,6 @@ export default compose(
 				validateCustomer:()=>{dispatch({type:'CUSTOMER_VALIDATE'});}
 			})
 		),
-	updateCustomerMutation
+	updateCustomerMutation,
+	regionQuery
 	)(CreateCustomerDialog);

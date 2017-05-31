@@ -2,17 +2,18 @@ var webpack = require('webpack');
 
 module.exports = {
     entry: {
-        admin: './client/admin/browser.js',
-        site:'./client/site/browser.js'
+        admin: ['react-hot-loader/patch','./client/admin/browser.js'],
+        site:['react-hot-loader/patch','./client/site/browser.js']
         //'webpack/hot/dev-server',
-        //'webpack-dev-server/client?http://localhost:3132'
+        //'webpack-dev-server/client?http://localhost:3031'
     },
     module: {
         loaders: [{
             test: /\.js?$/,
             exclude: /node_modules/,
-            loaders: ["babel-loader"]
-        }]
+            loaders: ["react-hot-loader/webpack","babel-loader"]
+        }
+        ]
     },
     resolve: {
         extensions: ['', '.js']

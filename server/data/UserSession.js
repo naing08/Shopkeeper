@@ -4,12 +4,14 @@ import login from '../security/login';
 
 export const type = 
 `	type UserSession{
-		success:Boolean!,
-		message:String,
-		access_token:String,
-		user_id:Int,
-		user_name:String,
-		account_type:String
+		success:Boolean!
+		access_token:String!
+		user_id:Int!
+		user_name:String!
+		account_type:String!
+		profile_pic:String!
+		full_name:String!
+		entity_id:Int!
 	}
 `;
 

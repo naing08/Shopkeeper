@@ -30,7 +30,7 @@ import {compose} from 'react-apollo';
 import {connect} from 'react-redux';
 
 
-const AppBar=({router,muiTheme,search,onSearchChange,onSearchModeChange,groupId,isSearchMode,loading,PathToProductGroup,onCreateNew,onCreateNewGroup})=>{
+const AppBar=({router,muiTheme,search,onSearchChange,onSearchModeChange,groupId,isSearchMode,loading,PathToProductGroup,onCreateNew,onCreateNewGroup,toggleDrawer})=>{
     const groupPathBtnStyle = {
         margin:0,
         height:'100%',
@@ -38,7 +38,7 @@ const AppBar=({router,muiTheme,search,onSearchChange,onSearchModeChange,groupId,
     };
     let toolBar = <Toolbar style={{height:'64px',backgroundColor:muiTheme.palette.primary1Color}}>
         <ToolbarGroup firstChild={true}>
-            <IconButton touch={true}>
+            <IconButton touch={true} onClick={toggleDrawer}>
                 <NavigationMenu color={white} />
             </IconButton>
             <ToolbarTitle style={{color:'#fff'}} text="Product List"/>
@@ -86,7 +86,17 @@ const AppBar=({router,muiTheme,search,onSearchChange,onSearchModeChange,groupId,
 
 const AppBarWithData = pathToProductGroup(withRouter(AppBar));
 
-const ThemeableAppBar = muiThemeable()(AppBarWithData);
+const ThemeableAppBar = compose(
+        connect(
+            state=>({}),
+            dispatch=>({
+                toggleDrawer:()=>{
+                    dispatch({type:'ADMIN_SITE_NAV_DRAWER_TOGGLE'});
+                }
+            })
+        ),
+        muiThemeable()
+    )(AppBarWithData);
 
 class ProductBrowser extends React.Component{
     constructor(){

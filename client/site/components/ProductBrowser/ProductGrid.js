@@ -26,10 +26,14 @@ class ProductGrid extends React.Component{
 
 
 
-export default compose(
+const TheComponent= compose(
 		connect(
 			state=>({search:state.ProductBrowser.search}),
 			dispatch=>({})
 			),
 		productQuery
-	)(ProductGrid)
+	)(ProductGrid);
+
+export default (props)=>{
+	return (<TheComponent {...props} page={1}/>);
+}

@@ -1,13 +1,23 @@
 import update from 'react-addons-update';
+import {setCookie,getCookie} from '../../cookieManager';
 const initialData = {
 	search:null,
 	isSearchMode:false,
 	cart:{
-		items:[]
+		items:[],
+		grandTotal:0
 	}
 }
+const computeGrandTotal=(cartItems)=>{
+	let grandTotal = 0;
+	for(let item of cartItems){
+		let subTotal = item.Qty * item.Price;
+		grandTotal += subTotal || !isNaN(subTotal)? subTotal:0;
+	}
+	return grandTotal;
+}
 const cartOperation=(action)=>{
-	let jItems = localStorage.getItem('cart_items');
+	let jItems = getCookie('cart_items');
 	let items = jItems? JSON.parse(jItems):[];
 	let newState = items;
 	switch(action.type){
@@ -23,15 +33,21 @@ const cartOperation=(action)=>{
 			});
 			break;
 		case 'PRODUCT_CART_UPDATE_ITEM':
-			action.item.Qty = Math.max(1,action.item.Qty);
+			let newItem = Object.assign({},items[action.index],action.item);
+			if(!newItem.Qty)
+				newItem.Qty = 1;
+			newItem.Qty = Math.max(1,newItem.Qty);
 			newState = update(items,{
 				[action.index]:{
-					$set:Object.assign({},items[action.index],action.item)
+					$set:newItem
 				}
 			});
 			break;
+		case 'PRODUCT_CART_ITEMS_RESET':
+			newState=[];
+			break;
 	}
-	localStorage.setItem("cart_items", JSON.stringify(newState));
+	setCookie("cart_items", JSON.stringify(newState));
 	return newState;
 };
 
@@ -56,13 +72,24 @@ const ProductBrowser = (state = initialData,action)=>{
 		case 'PRODUCT_CART_REMOVE_ITEM':			
 		case 'PRODUCT_CART_UPDATE_ITEM':
 		case 'PRODUCT_CART_ITEMS_RELOAD':
-		 	return update(state,{
+		case 'PRODUCT_CART_ITEMS_RESET':
+		 	newState= update(state,{
 		 		cart:{
 		 			items:{
 		 				$set:cartOperation(action)
+		 			},
+		 			grandTotal:{
+		 				$set:0
 		 			}
 		 		}
-		 	})
+		 	});
+		 	return update(newState,{
+		 		cart:{
+		 			grandTotal:{
+		 				$set:computeGrandTotal(newState.cart.items)
+		 			}
+		 		}
+		 	});
 			break;
 		default:
 			return state;

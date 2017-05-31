@@ -29,10 +29,10 @@ class Grid extends React.Component{
 }
 
 
-const AppBar=({muiTheme,search,onSearchChange,onSearchModeChange,isSearchMode,loading,onCreateNew})=>{
+const AppBar=({muiTheme,search,onSearchChange,onSearchModeChange,isSearchMode,loading,onCreateNew,toggleDrawer})=>{
     let toolBar = <Toolbar style={{height:'64px',backgroundColor:muiTheme.palette.primary1Color}}>
         <ToolbarGroup firstChild={true}>
-            <IconButton touch={true}>
+            <IconButton touch={true} onTouchTap={toggleDrawer}>
                 <NavigationMenu color={white} />
             </IconButton>
             <ToolbarTitle style={{color:'#fff'}} text="Manage Customer"/>
@@ -63,7 +63,17 @@ const AppBar=({muiTheme,search,onSearchChange,onSearchModeChange,isSearchMode,lo
     );
 };
 
-const ThemeableAppBar = muiThemeable()(AppBar);
+const ThemeableAppBar =compose(
+        connect(
+            state=>({}),
+            dispatch=>({
+                toggleDrawer:()=>{
+                    dispatch({type:'ADMIN_SITE_NAV_DRAWER_TOGGLE'});
+                }
+            })
+        ),
+        muiThemeable()
+    )(AppBar);
 
 class CustomerBrowser extends React.Component{
     constructor(){

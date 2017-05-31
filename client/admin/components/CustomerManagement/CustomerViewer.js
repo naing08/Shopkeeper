@@ -35,7 +35,7 @@ class CustomerViewer extends React.Component{
         let {openEditDialog,edit,CustomerById} = this.props;
         if(CustomerById){
             let {id,FullName,PhoneNo,Email,Township,Region,Address,Photo,PhotoFormat} = CustomerById;
-            edit({id,FullName,PhoneNo,Email,Township,Region,Address,Photo,PhotoFormat});
+            edit({id,FullName,PhoneNo,Email,Township:Township.Name1,TownshipId:Township.id,Region:Region.Name1,RegionId:Region.id,Address,Photo,PhotoFormat});
             openEditDialog();
         }
     }
@@ -119,7 +119,7 @@ class CustomerViewer extends React.Component{
     
     
     renderAppBar(title){
-        let {loadingCustomerById,muiTheme,CustomerById} = this.props;
+        let {loadingCustomerById,muiTheme,CustomerById,toggleDrawer} = this.props;
         let {loading} = this.state;
         let accountActionButtons = [];
         if(CustomerById){
@@ -136,7 +136,7 @@ class CustomerViewer extends React.Component{
         }
         let toolBar = <Toolbar style={{height:'64px',backgroundColor:muiTheme.palette.primary1Color}}>
         <ToolbarGroup firstChild={true}>
-            <IconButton touch={true}>
+            <IconButton touch={true} onTouchTap={toggleDrawer}>
                 <NavigationMenu color={white} />
             </IconButton>
             <ToolbarTitle style={{color:'#fff'}} text={title}/>
@@ -172,7 +172,7 @@ class CustomerViewer extends React.Component{
                                             <FilePickerHidden ref={ el => this.filePickerHidden = el} accept="image/*" multiple={false} onFilesAccepted={this.onFilesAccepted.bind(this)}/>
                                         </IconButton>
                                         {this.state.imageUploading ? <CircularProgress size={30} thickness={3}/>:null}
-                                    </div>} avatar={ThumbnailUrl} subtitle={`${Township},${Region}`} />
+                                    </div>} avatar={ThumbnailUrl} subtitle={`${Township.Name1},${Region.Name1}`} />
                                 <CardText >
                                     <div className='row' style={{alignItems:'center'}}>
                                         <div className='row' style={{width:'200px',alignItems:'center'}}>
@@ -241,6 +241,9 @@ export default compose(
                     },
                     showSnackbar:(message)=>{
                         dispatch({type:'ADMIN_SITE_SNACKBAR_OPEN',message});
+                    },
+                    toggleDrawer:()=>{
+                        dispatch({type:'ADMIN_SITE_NAV_DRAWER_TOGGLE'});
                     }
                 })
             ),

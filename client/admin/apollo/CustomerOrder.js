@@ -12,6 +12,10 @@ const fragments = {
 			updatedAt
 			TotalQty
 			TotalAmount
+			ShipToName
+			ShipToRegion{Name1}
+			ShipToTownship{Name1}
+
 		}
 	`,
 	CustomerOrderById:`
@@ -46,12 +50,13 @@ const fragments = {
 };
 
 const CUSTOMER_ORDER_QUERY = gql`
-	query customerOrder($customerId:Int!,$page:Int!,$pageSize:Int!){
-		CustomerOrders:CustomerOrder(customerId:$customerId,page:$page,pageSize:$pageSize){
-			page
+	query customerOrder($customerId:Int!,$criteria:criteria!){
+		CustomerOrders:CustomerOrderByCustomerId(customerId:$customerId,criteria:$criteria){
+			currentPage
 			pageSize
 			hasMore
 			totalRows
+			totalPages
 			CustomerOrder{
 				...CustomerOrderItem
 			}
@@ -61,38 +66,33 @@ const CUSTOMER_ORDER_QUERY = gql`
 `;
 
 const orderByCustomerIdQuery = graphql(CUSTOMER_ORDER_QUERY,{
-	options:({customerId,page,pageSize})=>{
+	options:({customerId,criteria})=>{
 		return {
 			variables:{
 				customerId,
-				page,
-				pageSize
+				criteria
 			}
 		};
 	},
 	props:({ownProps:{customerId},data:{loading,refetch,fetchMore,CustomerOrders}})=>{
-		let {page,hasMore,pageSize} = CustomerOrders?CustomerOrders: {};
+		let {currentPage,totalPages,hasMore,pageSize,totalRows,CustomerOrder} = CustomerOrders?CustomerOrders: {};
 		return {
 			loading,
-			refetchOrdersByCustomerId:refetch,
-			CustomerOrders,
-			fetchMoreOrdersByCustomerId:(page)=>{
-				return fetchMore({
-					variables:{
-						page,
-						pageSize,
-						customerId
-					},
-					updateQuery:(previousResult,{fetchMoreResult})=>{
-						if(!fetchMoreResult.data){
-                            return previousResult;
-                        }
-                        const result =  Object.assign({},previousResult,{
-                            CustomerOrders:Object.assign({},previousResult.CustomerOrders,fetchMoreResult.data.CustomerOrders,{
-                                CustomerOrder:[...previousResult.CustomerOrders.CustomerOrder, ...fetchMoreResult.data.CustomerOrders.CustomerOrder]
-                            })
-                        });
-                        return result;
+			CustomerOrders:{
+				CustomerOrder,
+				pagination:{
+					currentPage,
+					totalPages,
+					pageSize,
+					totalRows
+				}
+			},
+			fetchOrdersByCustomerId:({customerId,pagination,orderBy})=>{
+				return refetch({
+					customerId,
+					criteria:{
+						pagination,
+						orderBy
 					}
 				});
 			},

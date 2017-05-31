@@ -12,7 +12,9 @@ const initialData = {
     PhoneNo:'',
     Email:'',
     Region:'',
+    RegionId:null,
     Township:'',
+    TownshipId:null,
     Address:'',
     IsConfirmedEmail:false,
     IsConfirmedPhoneNo:false,
@@ -20,7 +22,7 @@ const initialData = {
 };
 
 function validateCustomer(customer){
-	let {FullName,errors} = customer;
+	let {FullName,RegionId,TownshipId,PhoneNo,errors} = customer;
     errors = errors? errors:{};
     let isValid = true;
     if(!FullName) {
@@ -28,6 +30,23 @@ function validateCustomer(customer){
         isValid = false;
     }else
         errors.FullName="";
+    if(!RegionId){
+        errors.RegionId = "Select region";
+        isValid=false;
+    }else
+        errors.RegionId="";
+    if(!TownshipId){
+        errors.TownshipId="Select township";
+        isValid=false;
+    }else
+        errors.TownshipId="";
+
+    if(!PhoneNo){
+        errors.PhoneNo="Phone no is required";
+        isValid=false;
+    }else
+        errors.PhoneNo="";
+        
     return {isValid,errors};
 }
 

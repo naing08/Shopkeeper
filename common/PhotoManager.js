@@ -37,6 +37,13 @@ const PhotoManager = {
             return PhotoManager.upload(file,PhotoManager.Customer.preset,PhotoManager.url);
         }
     },
+
+    BankTransfer:{
+        preset:'shopkeeper_banktransfer',
+        upload:file=>{
+            return PhotoManager.upload(file,PhotoManager.BankTransfer.preset,PhotoManager.url);
+        }
+    },
     
     upload:(file,PRESET,URL)=>{
         const formData = new FormData();

@@ -21,6 +21,7 @@ passport.use(new BearerStrategy(
   findSession
 ));
 
+
 passport.use('bearer-custom',new CustomStrategy(
     (req,done)=>{
         let token = req.headers.authorization? req.headers.authorization.replace('Bearer ',''):'';
@@ -34,7 +35,6 @@ passport.use('bearer-custom',new CustomStrategy(
             return Promise.reject("Invalid access key");
           }
         }).catch(error=>{
-          console.log('fail to authenticate');
           done(null,{
             isAuthenticated:false,
             error
@@ -43,6 +43,30 @@ passport.use('bearer-custom',new CustomStrategy(
         
     }
   ));
+
+passport.use('cookie-custom',new CustomStrategy(
+    (req,done)=>{
+        let token = req.cookies.access_token;
+        token = token? token:req.cookies.access_token;
+        AuthenticateWithToken(token).then(userAccount=>{
+          if(userAccount){
+            userAccount.isAuthenticated=true;
+            done(null,userAccount);
+            return userAccount;
+          }else{
+            return Promise.reject("Invalid access key");
+          }
+        }).catch(error=>{
+          done(null,{
+            isAuthenticated:false,
+            error
+          });
+        });
+        
+    }
+  ));
+
+
 
 passport.use('cookie',new CustomStrategy(
     (req,done)=>{

@@ -22,6 +22,6 @@ export default (
         <Route component={CustomerOrderPage} path="/admin/CustomerOrder(/:id)"/>
         <Route component={ProductPage} path="/admin/ProductDetail(/:id)" />
         <Route component={Login} path="/admin/Login"/>
-        <Route component={Test} path="/Test"/>
+        <Route component={Test} path="/admin/Test"/>
     </Route>
 );

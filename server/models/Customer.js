@@ -40,24 +40,6 @@ module.exports=(sequelize,DataTypes)=>{
                 }
             }
         },
-        Region:{
-            type:DataTypes.STRING(50),
-            validate:{
-                len:{
-                    args:[[0,50]],
-                    msg:'Need to be less than 50 chars long'
-                }
-            }
-        },
-        Township:{
-            type:DataTypes.STRING(50),
-            validate:{
-                len:{
-                    args:[[0,50]],
-                    msg:'Need to be less than 50 chars long.'
-                }
-            }
-        },
         Address:{
             type:DataTypes.STRING(500),
             validate:{
@@ -81,6 +63,12 @@ module.exports=(sequelize,DataTypes)=>{
             type:DataTypes.BOOLEAN,
             allowNull:false,
             defaultValue:false
+        }
+    },{
+        classMethods:{
+            associate:models=>{
+                Customer.belongsTo(models.Township);
+            }
         }
     });
     return Customer;
