@@ -6,41 +6,18 @@ import {compose} from 'react-apollo';
 import {connect} from 'react-redux';
 import ActionShoppingCart from 'material-ui/svg-icons/action/shopping-cart';
 import ActionDescription from 'material-ui/svg-icons/action/description';
+import CommunicationVpnKey from 'material-ui/svg-icons/communication/vpn-key';
+import ActionLock from 'material-ui/svg-icons/action/lock';
 import {CardHeader} from 'material-ui/Card';
-import {getUserProfile} from '../auth';
+import {logout} from '../auth';
 import Badge from "material-ui/Badge";
 import {withRouter} from 'react-router';
 class NavDrawer extends React.Component{
-	constructor(){
-		super(...arguments);
-		this.state={
-			profile_pic:null,
-			full_name:'',
-			user_name:''
-		};
-		this.didMounted=false;
-	}
-	componentDidMount(){
-		let profile = getUserProfile();
-		let {profile_pic,full_name,user_name} = profile? profile:{};
-		this.setState({profile_pic,full_name,user_name});
-		this.didMounted = true;
-	}
-
-	getCartItems(){
-		let cartItems = [];
-		if(typeof window !=="undefined"){
-			cartItems=JSON.parse(localStorage.getItem("cart_items"));
-		}
-		return cartItems;
-	}
-
 
 	render(){
-		let {open,onDrawerStateChange,router} = this.props
-		let {profile_pic,full_name,user_name} = this.state;
-		let cartItemsCount = this.didMounted? this.getCartItems().length: 0;
-
+		let {open,onDrawerStateChange,router,cartItems,userProfile,resetUserProfile} = this.props
+		let {profilePic,fullName,userName} = userProfile? userProfile : {};
+		let cartItemsCount = cartItems? cartItems.length: 0;
 
 		return (
 			<Drawer
@@ -53,14 +30,15 @@ class NavDrawer extends React.Component{
 					<div style={{height:'168px', backgroundImage:'url("/img/bg_navdrawer_header.png")',backgroundSize:'cover',backgroundPosition:'center',backgroundRepeat:'no-repeat'}}>
 						<div className="layout fullheight" >
 							<div className="fullheight" style={{padding:'23px 0 0 15px'}}>
-								<img src={profile_pic} style={{width:'75px',borderRadius:'50%'}}/>
+								<img src={profilePic} style={{width:'75px',borderRadius:'50%'}}/>
 							</div>
-							<CardHeader style={{flexShrink:0}} title={<span style={{color:'#fff'}}>{full_name}</span>} subtitle={<span style={{color:'#fff'}}>{user_name}</span>}/>
+							<CardHeader style={{flexShrink:0}} title={<span style={{color:'#fff'}}>{fullName}</span>} subtitle={<span style={{color:'#fff'}}>{userName}</span>}/>
 						</div>
 					</div>
 					<Menu>
 						<MenuItem onClick={()=>{router.push("/cart");onDrawerStateChange(false);}} primaryText="Cart" leftIcon={<ActionShoppingCart/>} rightIcon={<Badge className="badge" badgeContent={cartItemsCount} secondary={true} badgeStyle={{top: 0, left: 0}}/>}/>
-						<MenuItem primaryText="My Orders" leftIcon={<ActionDescription/>}/>
+						<MenuItem onClick={()=>{router.push("/orders");onDrawerStateChange(false);}} primaryText="My Orders" leftIcon={<ActionDescription/>}/>
+						{userName? <MenuItem primaryText="Log out" onClick={()=>{logout();onDrawerStateChange(false);router.push('/Login');resetUserProfile();}} leftIcon={<ActionLock/>}/>: <MenuItem primaryText="Log in" onClick={()=>{router.push('/Login');onDrawerStateChange(false);}} leftIcon={<CommunicationVpnKey/>}/>}
 					</Menu>
 				</div>
 			</Drawer>
@@ -70,13 +48,16 @@ class NavDrawer extends React.Component{
 
 export default compose(
 		connect(
-			state=>({open:state.Site.isNavDrawerOpen}),
+			state=>({open:state.Site.isNavDrawerOpen,cartItems:state.ProductBrowser.cart.items,userProfile:state.UserProfile}),
 			dispatch=>({
 					onDrawerStateChange:(open)=>{
 						if(open)
 							dispatch({type:'SITE_NAV_DRAWER_OPEN'});
 						else
 							dispatch({type:'SITE_NAV_DRAWER_CLOSE'});
+					},
+					resetUserProfile:()=>{
+						dispatch({type:'USER_PROFILE_RESET'});
 					}
 				})
 			),

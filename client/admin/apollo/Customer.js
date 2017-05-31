@@ -12,8 +12,14 @@ const fragments = {
 			deletedAt
 			ThumbnailUrl
 			UserAccountId
-            Region
-            Township
+            Region{
+                id
+                Name1
+            }
+            Township{
+                id
+                Name1
+            }
 		}
 	`,
 	CustomerById:`
@@ -29,8 +35,14 @@ const fragments = {
             ThumbnailUrl
             PhoneNo
             Email
-            Region
-            Township
+            Region{
+                id
+                Name1
+            }
+            Township{
+                id
+                Name1
+            }
             Address
             IsConfirmedPhoneNo
             IsConfirmedEmail
@@ -121,8 +133,8 @@ const customerByIdQuery=graphql(CUSTOMER_BY_ID_QUERY,{
 }); 
 
 const UPDATE_CUSTOMER = gql`
-mutation customerMutate($id:Int,$FullName:String!,$Photo:String,$PhotoFormat:String,$PhoneNo:String,$Email:String,$Region:String,$Township:String,$Address:String){
-    customerMutate:Customer(id:$id,FullName:$FullName,Photo:$Photo,PhotoFormat:$PhotoFormat,PhoneNo:$PhoneNo,Email:$Email,Region:$Region,Township:$Township,Address:$Address){
+mutation customerMutate($id:Int,$FullName:String!,$Photo:String,$PhotoFormat:String,$PhoneNo:String,$Email:String,$TownshipId:Int!,$Address:String){
+    customerMutate:Customer(id:$id,FullName:$FullName,Photo:$Photo,PhotoFormat:$PhotoFormat,PhoneNo:$PhoneNo,Email:$Email,TownshipId:$TownshipId,Address:$Address){
         errors{
             key
             message

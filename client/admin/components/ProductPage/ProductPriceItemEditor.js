@@ -1,5 +1,5 @@
 import React from 'react';
-import CurrencyEditor from '../../../common/CurrencyEditor';
+import CurrencyEditor from '../../../common/editor/CurrencyEditor';
 import {connect} from 'react-redux';
 import {compose} from 'react-apollo';
 

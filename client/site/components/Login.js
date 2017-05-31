@@ -30,9 +30,9 @@ class Login extends React.Component{
 		return (
 			<div className="row fullheight" style={{justifyContent:'center',alignItems:'center'}}>
 				<div style={{display:'inline-block'}}>
-					<TextField name="UserName" hintText="User Name" ref="UserName" floatingLabelText="User Name" value={UserName} onChange={e=>{makeEdit({UserName:e.target.value});}}/>
+					<TextField name="UserName" id="UserName" hintText="User Name" ref="UserName" floatingLabelText="User Name" value={UserName} onChange={e=>{makeEdit({UserName:e.target.value});}}/>
 					<br/>
-					<TextField name="Password" hintText="Password" ref="Password" floatingLabelText="Password" value={Password} onChange={e=>{makeEdit({Password:e.target.value});}} type="password" />
+					<TextField name="Password" id="Password" hintText="Password" ref="Password" floatingLabelText="Password" value={Password} onChange={e=>{makeEdit({Password:e.target.value});}} type="password" />
 					<br/>
 					<Checkbox label="Keep Login" checked={Remember} onCheck={e=>{makeEdit({Remember:e.target.checked});}}/>
 					<br/>

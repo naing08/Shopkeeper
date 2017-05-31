@@ -6,6 +6,9 @@ import Login from './Login';
 import Site from './Site';
 import ProductBrowser from './ProductBrowser';
 import ProductPage from './ProductPage';
+import Checkout from './Checkout';
+import UserProfile from './UserProfile';
+import SignUp from './SignUp';
 export default ({client})=>{
     const store = createStore(
         combineReducers({
@@ -13,6 +16,9 @@ export default ({client})=>{
             Site,
             ProductBrowser,
             ProductPage,
+            Checkout,
+            UserProfile,
+            SignUp,
             apollo: client.reducer()
         }),
         client.initialState, // initial state

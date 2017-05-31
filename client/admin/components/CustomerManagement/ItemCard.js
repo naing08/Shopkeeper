@@ -20,7 +20,7 @@ class ItemCard extends React.Component{
         return (<div className="col-lg-3 col-md-4 col-sm-6 col-xs-12 grid-item">
                     <a href='#' onClick={(e)=>{e.preventDefault();router.push(`/admin/Customer/${id}`);}} style={{display:'block'}}>
                         <Card>
-                            <CardHeader title={FullName} avatar={ThumbnailUrl} subtitle={`${Township},${Region}`} />
+                            <CardHeader title={FullName} avatar={ThumbnailUrl} subtitle={`${Township.Name1},${Region.Name1}`} />
                         </Card>
                     </a>
                 </div>);

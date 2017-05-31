@@ -2,7 +2,7 @@ import db from '../models/index';
 import {property} from 'lodash';
 import PaginationHelper from '../database/PaginationHelper';
 import cloudinary from '../cloudinary';
-
+import login from '../security/login';
 export const type = `
 type Customer{
 	id:Int!
@@ -11,8 +11,8 @@ type Customer{
     UserName:String
     PhoneNo:String
     Email:String
-    Region:String
-    Township:String
+    Region:Region
+    Township:Township
     Address:String
     IsConfirmedPhoneNo:Boolean
     IsConfirmedEmail:Boolean
@@ -38,6 +38,8 @@ type CustomerMutationResult{
 	instance:Customer
 	errors:[error]
 }
+
+
 `;
 
 export const query = `
@@ -46,7 +48,8 @@ export const query = `
 `;
 
 export const mutation=`
-	Customer(id:Int,FullName:String!,Photo:String,PhotoFormat:String,PhoneNo:String,Email:String,Region:String,Township:String,Address:String):CustomerMutationResult
+	Customer(id:Int,FullName:String!,Photo:String,PhotoFormat:String,PhoneNo:String,Email:String,TownshipId:Int!,Address:String):CustomerMutationResult
+	RegisterCustomer(FullName:String!,PhoneNo:String!,Email:String,TownshipId:Int!,UserName:String!,Password:String,Photo:String,PhotoFormat:String,Remember:Boolean!):UserSession
 `;
 
 export const resolver = {
@@ -65,8 +68,8 @@ export const resolver = {
 	      PhotoFormat:property('PhotoFormat'),
 	      PhoneNo:property('PhoneNo'),
 	      Email:property('Email'),
-	      Region:property('Region'),
-	      Township:property('Township'),
+	      Region:(customer)=>(customer.getTownship().then(township=>(township.getRegion()))),
+	      Township:(customer)=>(customer.getTownship()),
 	      Address:property('Address'),
 	      IsConfirmedEmail:property('IsConfirmedEmail'),
 	      IsConfirmedPhoneNo:property('IsConfirmedPhoneNo'),
@@ -93,15 +96,15 @@ export const resolver = {
 		}
 	},
 	mutation:{
-		Customer(_,{id,FullName,Photo,PhotoFormat,PhoneNo,Email,Region,Township,Address}){
+		Customer(_,{id,FullName,Photo,PhotoFormat,PhoneNo,Email,TownshipId,Address}){
 			Email = Email? Email:null;
 			return db.sequelize.transaction(t=>{
-	          return db.Customer.findOrCreate({where:{id},defaults:{FullName,Photo,PhotoFormat,PhoneNo,Email,Region,Township,Address},transaction:t})
+	          return db.Customer.findOrCreate({where:{id},defaults:{FullName,Photo,PhotoFormat,PhoneNo,Email,TownshipId,Address},transaction:t})
 	          .spread((instance,created)=>{
 	              if(created)
 	                return cloudinary.moderateImage(Photo).then(()=>({instance}));
 	              else
-	                return instance.update({FullName,Photo,PhotoFormat,PhoneNo,Email,Region,Township,Address},{transaction:t,fields:['FullName','Photo','PhotoFormat','PhoneNo','Email','Region','Township','Address']})
+	                return instance.update({FullName,Photo,PhotoFormat,PhoneNo,Email,TownshipId,Address},{transaction:t,fields:['FullName','Photo','PhotoFormat','PhoneNo','Email','TownshipId','Address']})
 	                    .then((instance)=>{
 	                      return cloudinary.moderateImage(Photo).then(()=>({instance}));
 	                    });
@@ -112,6 +115,21 @@ export const resolver = {
                 else
                 	return error;
             });
+		},
+		RegisterCustomer(_,{UserName,Password,FullName,PhoneNo,Email,TownshipId,Address,Photo,PhotoFormat,Remember}){
+			return db.sequelize.transaction(t=>{
+				return db.Customer.create({FullName,PhoneNo,Email,TownshipId,Photo,PhotoFormat,Address},{transaction:t,fields:['FullName','PhoneNo','Email','TownshipId','Photo','PhotoFormat','Address']})
+				.then(instance=>{
+					return instance.createUserAccount({UserName,Password},{fields:['UserName','Password'],transaction:t});
+				})
+			}).then(()=>{
+						return login(UserName,Password,Remember).then(result=>{
+							if(Photo)
+								return cloudinary.moderateImage(Photo).then(()=>result);
+							else
+								return result;
+						});
+					});
 		}
 	}
 };

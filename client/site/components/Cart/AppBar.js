@@ -9,7 +9,6 @@ import React from 'react';
 import {compose} from 'react-apollo';
 import {connect} from 'react-redux';
 import {withRouter} from 'react-router';
-import AVPlaylistAddCheck from 'material-ui/svg-icons/av/playlist-add-check';
 
 const AppBar=({muiTheme,title,toggleDrawer,router})=>{
 	let toolBar = <Toolbar style={{height:'64px',backgroundColor:muiTheme.palette.primary1Color}}>
@@ -17,16 +16,14 @@ const AppBar=({muiTheme,title,toggleDrawer,router})=>{
 			        	<IconButton touch={true} onTouchTap={toggleDrawer}>
 			                <NavigationMenu color={white} />
 			            </IconButton>
-			            <IconButton touch={true} onTouchTap={()=>{router.goBack();}}>
+			            <IconButton touch={true} onTouchTap={()=>{router.push('/');}}>
 			                <NavigationArrowBack color={white} />
 			            </IconButton>
 			            <ToolbarTitle style={{color:'#fff'}} text={title}/>
 			        </ToolbarGroup>
 			        
 			        <ToolbarGroup lastChild={true}>
-			            <IconButton touch={true} onTouchTap={()=>{router.goBack();} }>
-			                <AVPlaylistAddCheck color={white} />
-			            </IconButton>
+			        
 			        </ToolbarGroup>
 			    </Toolbar>;
 			    

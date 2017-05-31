@@ -12,7 +12,7 @@ const Preference = {
             },
             decimal: ".", // decimal point separator
             thousand: ",", // thousands separator
-            precision: 2 // decimal places
+            precision: 0 // decimal places
         },
         number: {
             precision: 2, // default precision on numbers is 0

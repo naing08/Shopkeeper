@@ -5,8 +5,8 @@ import React,{PropTypes} from 'react';
 import FilePickerFabButton from '../../../common/FilePickerFabButton';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
 import ContentAdd from 'material-ui/svg-icons/content/add';
-import ToggleStar from 'material-ui/svg-icons/Toggle/star';
-import ContentClear from 'material-ui/svg-icons/Content/clear';
+import ToggleStar from 'material-ui/svg-icons/toggle/star';
+import ContentClear from 'material-ui/svg-icons/content/clear';
 import muiThemeable from 'material-ui/styles/muiThemeable';
 import {photoInitialData} from '../../reducer/Product'
 import {compose} from 'react-apollo';

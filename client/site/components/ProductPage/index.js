@@ -6,7 +6,9 @@ import {productByIdQuery} from '../../apollo/Product';
 import AppBar from './AppBar';
 import Fab from './Fab';
 import FloatingActionButton from 'material-ui/FloatingActionButton';
-
+import Accounting from 'accounting';
+import Carousel from './Carousel';
+import ProductCard from '../ProductBrowser/ProductCard';
 class ProductPage extends React.Component{
 	
 	componentDidMount(){
@@ -28,7 +30,7 @@ class ProductPage extends React.Component{
 	}
 	render(){
 		let {ProductById} =  this.props;
-		let {DefaultPhoto,Alias,Name,Description,Photo,ProductSpec,id} = ProductById? ProductById:{};
+		let {DefaultPhoto,Alias,Name,Description,Photo,ProductSpec,id,Price,RelatedProducts} = ProductById? ProductById:{};
 		
 
 		return (
@@ -36,18 +38,24 @@ class ProductPage extends React.Component{
 				<AppBar title={Name}/>
 				<div className="fullheight scrollable">
 					<div style={{padding:'5px'}}>
-						<Card>
-							<CardMedia style={{position:'relative'}} overlay={<CardTitle title={Name} subtitle={Alias}>
-								<FloatingActionButton style={{position:'absolute',right:'20px',bottom:'-15px'}} mini={true} secondary={true}>
-									<ActionFavoriteBorder/>
-								</FloatingActionButton>
-							</CardTitle>}>
-								<img src={DefaultPhoto? DefaultPhoto.url:null}/>
-							</CardMedia>
-							
-							<CardText className="">
-								{Description}
-							</CardText>
+						<Card >
+							<div className="row">
+								<Carousel Photo={Photo}	className="col-md-6 col-xs-12"/>
+								<div className="col-md-6 col-xs-12">
+									<CardTitle title={Name} subtitle={Alias}>
+										<div className="row">
+											<span className="text-price" style={{flex:1}}>{Accounting.formatMoney(Price)}</span>
+											<FloatingActionButton  mini={true} secondary={true}>
+												<ActionFavoriteBorder/>
+											</FloatingActionButton>
+										</div>
+									</CardTitle>
+
+									<CardText className="">
+										{Description}
+									</CardText>
+								</div>
+							</div>
 						</Card>
 					</div>
 					<div style={{padding:'5px'}}>
@@ -57,6 +65,16 @@ class ProductPage extends React.Component{
 								<ul>
 									{ProductSpec? ProductSpec.map(p=>(<li key={p.id}>{`${p.Name} ${p.Value}`}</li>)):null}
 								</ul>
+							</CardText>
+						</Card>
+					</div>
+					<div style={{padding:'5px'}}>
+						<Card>
+							<CardTitle title="Related Products"/>
+							<CardText>
+								<div className="row">
+									{RelatedProducts? RelatedProducts.map(p=>(<ProductCard key={p.id} Product={p}/>)):null}
+								</div>
 							</CardText>
 						</Card>
 					</div>

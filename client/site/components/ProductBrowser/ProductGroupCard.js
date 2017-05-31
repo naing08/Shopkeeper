@@ -15,7 +15,7 @@ class ProductGroupCard extends React.Component{
 				<div className=" col-lg-3 col-md-4 col-sm-6 col-xs-12 grid-item" >
 					<a href='#' onClick={e=>{e.preventDefault();this.browseTo();}}>
 						<Card>
-							<CardHeader title={Name} subtitle={Alias} avatar={Photo}></CardHeader>
+							<CardHeader title={Name} subtitle={Alias} avatar={<img src={Photo} style={{width:"100px",height:'100px',flexShrink:'0'	}}/>}></CardHeader>
 						</Card>
 					</a>
 				</div>

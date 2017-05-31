@@ -6,7 +6,6 @@
  */
 import React, { PropTypes } from 'react';
 import muiThemeable from 'material-ui/styles/muiThemeable';
-
 const scriptUrl = "/site.bundle.js";
 const siteHtml = ({ content, state,title,muiTheme }) => (
     <html lang="en">
@@ -16,6 +15,7 @@ const siteHtml = ({ content, state,title,muiTheme }) => (
         <meta name="theme-color" content={muiTheme.palette.primary1Color}/>     
         <link rel="stylesheet" href="/style/flexboxgrid.min.css"  />
         <link rel="stylesheet" href="/style/sitestyle.css"/>
+        <link rel="stylesheet" type="text/css" href="/style/csgrid.css"/>
         <title>Shopkeeper</title>
     </head>
     <body>

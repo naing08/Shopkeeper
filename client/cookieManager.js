@@ -1,12 +1,17 @@
-function setCookie(cname, cvalue, seconds) {
+function setCookie(cname, cvalue,path, seconds) {
+    var cookie="";
     if (seconds) {
         var d = new Date();
         d.setTime(d.getTime() + (exdays  * 1000));
         var expires = "expires=" + d.toUTCString();
-        document.cookie = cname + "=" + cvalue + "; " + expires;
+        cookie = cname + "=" + cvalue + "; " + expires;
     } else {
-        document.cookie = cname + "=" + cvalue;
+        cookie = cname + "=" + cvalue;
     }
+    if(path){
+        cookie = cookie + "; path=" + path
+    }
+    document.cookie=cookie
 }
 
 function getCookie(cname) {

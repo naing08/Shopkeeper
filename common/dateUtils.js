@@ -170,3 +170,16 @@ Date.prototype.assumeUTCAsLocal=function(){
 Date.prototype.timeAgo=function(){
     return timeAgo.format(this);
 };
+
+Date.prototype.uniqueNumber=function(){
+    let num = this.valueOf();
+    if(num <=Date.previousUniqueNumber){
+        Date.previousUniqueNumber++;
+        return Date.previousUniqueNumber;
+    }else{
+        Date.previousUniqueNumber = num;
+        return num; 
+    }
+
+};
+Date.previousUniqueNumber = 0;

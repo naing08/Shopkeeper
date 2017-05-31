@@ -1,44 +1,22 @@
 /**
  * Created by ChitSwe on 1/21/17.
  */
-import React from 'react';
-import gql from 'graphql-tag';
-import {graphql} from 'react-apollo';
+import React from 'react';;
+import TownshipSelector from './site/components/TownshipSelector';
 class Test extends React.Component{
-    constructor(){
-        super(...arguments);
-        this.state={
-            searchText:''
-        };
-    }
-    handleUpdateInput(searchText){
-        this.setState({searchText});
-        this.props.data.refetch({search:searchText});
-    }
-    handleNewRequest(request,index){
-        console.log(request);
-    }
     render(){
-        
         return (
-            <div>
-               
-            </div>
-        );
+            <TownshipSelector 
+                        selectFieldProps={{
+                            name:"Delivery_Township",
+                            floatingLabelText:"Township",
+                            hintText:"Township",    
+                            id:"Delivery_Township",
+                            className:"checkout_delivery_field township col-xs-12"
+                        }}
+                    />
+            );
     }
 }
 
-const QUERY = gql`
-query queryProductBrand($search:String){
-    ProductBrands:ProductBrand(page:1,pageSize:10,search:$search){
-        ProductBrand{
-            id
-            Alias
-            Name
-            Photo
-        }    
-    }
-}
-`;
-
-export default graphql(QUERY)(Test);
+export default Test;

@@ -4,6 +4,8 @@
 import Express,{Router} from 'express';
 import bodyParser from 'body-parser';
 import './common/dateUtils';
+import Accounting from 'accounting';
+import Preference from './common/Preference';
 import db from './server/models';
 //import  './server/database/integration/index';
 import { apolloExpress, graphiqlExpress } from 'apollo-server';
@@ -37,24 +39,37 @@ import {default as SiteHtml} from './server/siteHtml';
 import   './server/security/auth';
 import passport from 'passport';
 import {loginHandler} from './server/security/login';
+import proxy from 'proxy-middleware';
+
+import url from "url";
+
+Accounting.settings = {
+    currency: Preference.format.currency,
+    number: Preference.format.number
+};
 const app = new Express();
 const appRouter = new Router();
 const port = 3232;
+const proxyPort = 3230;
 const graphqlUrl=`http://localhost:${port}/graphql`;
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded());
 app.use(passport.initialize());
 app.use(cookieParser());
 app.use(latency({ min: 100, max: 500 }));
+app.use('/admin.bundle.js',proxy(url.parse('http://localhost:' + proxyPort + '/public/admin.bundle.js')));
+app.use('/site.bundle.js',proxy(url.parse('http://localhost:' + proxyPort + '/public/site.bundle.js')));
+app.use('/admin.bundle.js.map',proxy(url.parse('http://localhost:' + proxyPort + '/public/admin.bundle.js.map')));
+app.use('/site.bundle.js.map',proxy(url.parse('http://localhost:' + proxyPort + '/public/site.bundle.js.map')));
 app.post('/login',loginHandler);
-app.use('/graphql',passport.authenticate('bearer-custom',{session:false}), apolloExpress( (req) => {
+app.use('/graphql',passport.authenticate('bearer-custom',{session:false}), apolloExpress( (req,res) => {
     return {
         schema: makeExecutableSchema({
             typeDefs: Schema,
             resolvers:Resolver,
             allowUndefinedInResolve: true,
         }),
-        context: { user:req.user }
+        context: { user:req.user,httpResponse:res }
     }
 }));
 
@@ -158,7 +173,7 @@ app.get('/Login',(req,res)=>{
     });
 });
 
-app.use(passport.authenticate('cookie',{session:false,failureRedirect:'/Login'}),(req, res) => {
+app.use(passport.authenticate('cookie-custom',{session:false}),(req, res) => {
     req.headers.authorization =  `Bearer ${req.cookies.access_token}`;
     match({routes:siteRoutes,location:req.originalUrl},(error,redirectLocation,renderProps)=>{
                if(redirectLocation)
@@ -205,7 +220,16 @@ const webpackConfig = {
     devtool: 'source-map'
 };
 */
-if(app.settings.env !=='production') {
+
+
+
+if(true){
+    migration.up().then((migrations) => {
+        app.listen(port, () => {
+            console.log(`Server is running on port ${port}`);
+        });
+    });
+}else if(app.settings.env !=='production' ) {
     console.log('Start webpack bundling');
     webpack(webpackConfig, function (err, stats) {
         if (err)

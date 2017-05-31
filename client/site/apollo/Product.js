@@ -8,17 +8,15 @@ const fragments={
    id,
    Alias
    Name
-   DefaultPhoto{
-    url
-   }
+   DefaultPhotoUrl
    Price
   }
 `
 };
 
 const PRODUCT_QUERY = gql`
-query productQuery($page:Int,$pageSize:Int!,$search:String,$parentGroupId:Int){
-    Products:Product(page:$page,pageSize:$pageSize,search:$search,ProductGroupId:$parentGroupId){
+query productQuery($page:Int!,$pageSize:Int!,$search:String,$parentGroupId:Int){
+    Products:Product(page:$page,pageSize:$pageSize,search:$search,ProductGroupId:$parentGroupId,paranoid:true){
         page
         pageSize
         hasMore
@@ -41,12 +39,12 @@ const query = graphql(PRODUCT_QUERY,{
             }
         };
     },
-    props({ownProps:{parentGroupId,search},data:{loading,Products,fetchMore,refetch}}){
-        let {page,hasMore,pageSize,Product} = Products?Products: {};
+    props({ownProps:{parentGroupId,search,pageSize},data:{loading,Products},fetchMore,refetch}){
+        let {page,hasMore,Product}= Products? Products: {};
         return {
             parentGroupId,
             loading,
-            page,
+            page:page? page: 1,
             pageSize,
             hasMore,
             Product,
@@ -85,10 +83,14 @@ query productByIdQuery($id:Int!){
         Price
         Description
         DefaultPhoto{
-            id
             url
+            id
+            FileName
+            Format
         }
-        
+
+        ProductBrandId
+        ProductGroupId
         ProductBrand{
             Alias
             Name
@@ -106,9 +108,17 @@ query productByIdQuery($id:Int!){
             ProductId
             url
         }
-        
+        ProductPrice{
+            id
+            PriceBookName
+            Price
+        }
+        RelatedProducts{
+            ...ProductItem
+        }
     }
 }
+${fragments.Product}
 `;
 
 const productByIdQuery=graphql(PRODUCT_BY_ID_QUERY,{
