@@ -53,7 +53,7 @@ module.exports = {
         allowNull:false
       },
       Price:{
-        type:Sequelize.DECIMAL(10,4),
+        type:Sequelize.DECIMAL(14,2),
         allowNull:false
       }
     });

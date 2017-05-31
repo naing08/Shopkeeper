@@ -29,7 +29,7 @@ module.exports=(sequelize,DataTypes)=>{
                 }
             }
         },
-        Price:DataTypes.DECIMAL(10,4),
+        Price:DataTypes.DECIMAL(14,2),
         Description:DataTypes.TEXT,
         Overview:DataTypes.TEXT
 
